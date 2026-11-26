@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Sanatan Scroll, a verse feed for the Gita, Ramayana, Mahabharata and Hanuman Chalisa. Read and listen in your browser, no app to install. Preview build.">
+<title>Sanatan Scroll, Preview</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">Sanatan <span>Scroll</span></div>
+  <div class="spacer"></div>
+  <button class="pillbtn" id="langBtn" type="button">EN / हिंदी</button>
+  <button class="probtn" id="proBtn" type="button">Go Pro</button>
+</header>
+
+<nav class="textbar" id="textBar" aria-label="Choose a text"></nav>
+
+<div class="layout">
+  <main class="feedcol">
+    <div id="playerSlot" class="player hidden"></div>
+    <section id="feedView">
+      <div class="feed" id="feed" aria-label="Verse feed"></div>
+      <div class="progressline" id="progressLine"></div>
+    </section>
+    <section id="panelView" class="panel hidden"></section>
+  </main>
+  <aside class="rail" id="rail" aria-label="Chapters and sections"></aside>
+</div>
+
+<nav class="bottomnav" id="bottomNav">
+  <button type="button" data-view="feed" class="active">Scroll</button>
+  <button type="button" data-view="discover">Discover</button>
+  <button type="button" data-view="plans">Plans</button>
+  <button type="button" data-view="saved">Saved</button>
+  <button type="button" data-view="profile">Profile</button>
+</nav>
+
+<div id="modalSlot"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

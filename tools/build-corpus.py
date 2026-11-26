@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+"""Build data/corpus.json for the Sanatan Scroll Vercel preview.
+
+Reads the real bundled texts from the Muse artifact source (read only, never
+written to) plus the Hindi Gita meanings from the audio corpus, and writes one
+flat JSON file the static preview site loads with fetch.
+
+Sources:
+  - Gita Sanskrit + English: ts-spaces/sanatan-scroll/client/src/data/gita.json
+    (Purohit Swami translation, public domain, 701 verses)
+  - Gita Hindi: sanatan-scroll-audio/corpus/gita-ch*.json (Hindi renderings
+    made from the English for the audio job; labelled as such in the app)
+  - Ramayana: ts-spaces/.../data/ramayana.json (332 verses, Sanskrit + English)
+  - Mahabharata: ts-spaces/.../data/mahabharata.json (155 verses, Sanskrit +
+    transliteration only, no bundled English or Hindi meaning)
+  - Hanuman Chalisa: ts-spaces/.../data/chalisa.json (43 items, all 3 languages)
+
+Em dashes are stripped from the generated file. Ankit asked for no em dashes
+anywhere in the app text, and the source Hindi renderings contain a few.
+
+Run: python3 tools/build-corpus.py
+Output: data/corpus.json
+"""
+
+import glob
+import json
+import os
+
+HOME = os.path.expanduser("~")
+ART = os.path.join(HOME, "workspace/ts-spaces/sanatan-scroll/client/src/data")
+AUD = os.path.join(HOME, "workspace/sanatan-scroll-audio/corpus")
+OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                   "data/corpus.json")
+
+
+def clean(s):
+    if not isinstance(s, str):
+        return s
+    return s.replace("\u2014", ", ").replace("\u2013", ", ").replace("  ", " ").strip()
+
+
+def clean_deep(obj):
+    if isinstance(obj, str):
+        return clean(obj)
+    if isinstance(obj, list):
+        return [clean_deep(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: clean_deep(v) for k, v in obj.items()}
+    return obj
+
+
+def main():
+    gita = json.load(open(os.path.join(ART, "gita.json")))
+    hindi = {}
+    for path in sorted(glob.glob(os.path.join(AUD, "gita-ch*.json"))):
+        data = json.load(open(path))
+        for verse in data["verses"]:
+            hindi[verse["key"]] = verse.get("hindi")
+
+    gita_verses = []
+    for verse in gita["verses"]:
+        key = "gita:%d:%d" % (verse["c"], verse["v"])
+        gita_verses.append({
+            "key": key,
+            "c": verse["c"],
+            "v": verse["v"],
+            "sa": verse["sa"],
+            "hi": hindi.get(key),
+            "en": verse["en"],
+            "words": verse.get("words") or [],
+        })
+
+    ram = json.load(open(os.path.join(ART, "ramayana.json")))
+    ram_verses = []
+    for section in ram["sections"]:
+        for verse in section["verses"]:
+            ram_verses.append({
+                "key": "ramayana:%s:%d:%d" % (section["id"], verse["sarga"], verse["n"]),
+                "section": section["id"],
+                "sectionName": section["name"],
+                "sarga": verse["sarga"],
+                "n": verse["n"],
+                "sa": verse["sa"],
+                "hi": None,
+                "en": verse["en"],
+            })
+
+    maha = json.load(open(os.path.join(ART, "mahabharata.json")))
+    maha_verses = []
+    for section in maha["sections"]:
+        for verse in section["verses"]:
+            maha_verses.append({
+                "key": "mahabharata:%s:%d" % (section.get("id", "yaksha"), verse["n"]),
+                "section": section.get("id", ""),
+                "book": verse["book"],
+                "chap": verse["chap"],
+                "n": verse["n"],
+                "speaker": verse.get("speaker") or "",
+                "sa": verse["sa"],
+                "tr": verse.get("tr") or "",
+                "hi": None,
+                "en": None,
+            })
+
+    chal = json.load(open(os.path.join(ART, "chalisa.json")))
+    chal_verses = []
+    for verse in chal["verses"]:
+        chal_verses.append({
+            "key": "chalisa:%d" % verse["n"],
+            "n": verse["n"],
+            "type": verse["type"],
+            "num": verse["num"],
+            "sa": verse["sa"],
+            "hi": verse["hi"],
+            "en": verse["en"],
+        })
+
+    out = {
+        "meta": {
+            "app": "Sanatan Scroll, Vercel preview",
+            "counts": {
+                "gita": len(gita_verses),
+                "ramayana": len(ram_verses),
+                "mahabharata": len(maha_verses),
+                "chalisa": len(chal_verses),
+            },
+            "notes": [
+                "Gita English is the public domain Purohit Swami translation.",
+                "Gita Hindi is a plain Hindi rendering made from the English for the audio job, not a published translation.",
+                "Ramayana has Sanskrit and English only in the bundled text.",
+                "Mahabharata has Sanskrit and transliteration only in the bundled text, no English or Hindi meaning. In the Muse app the meaning is generated by the study layer.",
+                "Ramayana and Mahabharata are curated selections, not the full epics.",
+            ],
+        },
+        "gita": {
+            "chapters": [
+                {"n": c["n"], "name": c["name"], "meaningEn": c["meaningEn"],
+                 "count": c["count"]} for c in gita["chapters"]
+            ],
+            "verses": gita_verses,
+        },
+        "ramayana": {
+            "sections": [
+                {"id": s["id"], "name": s["name"], "nameHi": s["nameHi"],
+                 "count": len(s["verses"])} for s in ram["sections"]
+            ],
+            "verses": ram_verses,
+        },
+        "mahabharata": {
+            "sections": [
+                {"id": s.get("id", ""), "count": len(s["verses"])}
+                for s in maha["sections"]
+            ],
+            "verses": maha_verses,
+        },
+        "chalisa": {"verses": chal_verses},
+    }
+    out = clean_deep(out)
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
+    print("wrote", OUT, os.path.getsize(OUT), "bytes")
+    print({k: v for k, v in out["meta"]["counts"].items()})
+
+
+if __name__ == "__main__":
+    main()
