@@ -113,10 +113,14 @@ input { font-family: inherit; }
 }
 .segmented button svg { width: 16px; height: 16px; }
 .segmented button.active { background: var(--accent); color: #fff; }
+/* Pro pill in the header is desktop only (lg+, 1024px), like the space:
+   on phone widths the header is decluttered, Sign In and the theme
+   toggle sit on the right, and Pro stays reachable from Profile. */
 .propill {
-  order: 1; display: flex; flex: 0 0 auto; align-items: center; gap: 4px; border-radius: 999px;
+  order: 1; display: none; flex: 0 0 auto; align-items: center; gap: 4px; border-radius: 999px;
   background: var(--gold); padding: 6px 12px; font-size: 14px; font-weight: 600; color: #fff;
 }
+@media (min-width: 1024px) { .propill { display: flex; } }
 .propill svg { width: 16px; height: 16px; }
 
 /* ---------- Side rails ---------- */

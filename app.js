@@ -14,8 +14,10 @@
    with AI and caches them on its server.
    Google sign-in is the space's real GIS OAuth token flow with the
    app's pre-configured Client ID (lib/config.ts in the space): tapping
-   Sign in opens Google's own account chooser, and signing in unlocks
-   Pro and resumes each text on the verse after the last one read.
+   Sign in opens Google's own account chooser. Signing in is free and
+   never unlocks Pro, Pro only comes from buying a plan. Signing in
+   saves verses, likes and streak, and resumes each text on the verse
+   after the last one read.
    Audio: Gita Chapter 1 in all three recorded voices, as in the space.
    No em dashes are used anywhere in this file, by Ankit's rule. */
 
@@ -82,12 +84,12 @@ var STR = {
     appearance: "Appearance", darkMode: "Dark mode", lightMode: "Light mode", account: "Account",
     notSignedIn: "Not signed in", previewReader: "Preview reader", signInWithGoogle: "Sign in with Google",
     signedInWithGoogle: "Signed in with Google", signOut: "Sign Out",
-    googleTiedNote: "Your streak, saved verses, likes, plan progress and Pro are tied to this Google account, on your phone and desktop alike.",
-    proTiedGoogle: "Pro will be tied to your Google account once you are signed in.",
-    proTiedSignedIn: "Pro will be tied to your Google account",
+    googleTiedNote: "Your streak, saved verses, likes and plan progress are tied to this Google account, on your phone and desktop alike. Signing in does not unlock Pro.",
+    proTiedGoogle: "Signing in is free and does not unlock Pro.",
+    proTiedSignedIn: "Signing in does not unlock Pro",
     signIn: "Sign in",
     tagline: "Learn your tradition",
-    proViaGoogle: "Unlocked with your Google sign-in",
+    proViaGoogle: "Signed in with Google",
     signInFailed: "Google sign-in did not complete. Please try again.",
     legal: "Legal", privacyPolicy: "Privacy Policy", termsConditions: "Terms and Conditions", refundPolicy: "Refund Policy",
     about: "About & sources",
@@ -158,12 +160,12 @@ var STR = {
     appearance: "रूप", darkMode: "डार्क मोड", lightMode: "लाइट मोड", account: "खाता",
     notSignedIn: "साइन इन नहीं है", previewReader: "पूर्वावलोकन पाठक", signInWithGoogle: "Google से साइन इन करें",
     signedInWithGoogle: "Google से साइन इन है", signOut: "साइन आउट",
-    googleTiedNote: "आपकी स्ट्रीक, सहेजे हुए श्लोक, लाइक, योजना की प्रगति और प्रो इस Google खाते से जुड़े हैं, फ़ोन हो या डेस्कटॉप।",
-    proTiedGoogle: "साइन इन करने के बाद प्रो आपके Google खाते से जुड़ेगा।",
-    proTiedSignedIn: "प्रो आपके Google खाते से जुड़ेगा",
+    googleTiedNote: "आपकी स्ट्रीक, सहेजे हुए श्लोक, लाइक और योजना की प्रगति इस Google खाते से जुड़े हैं, फ़ोन हो या डेस्कटॉप। साइन इन से प्रो नहीं खुलता।",
+    proTiedGoogle: "साइन इन निःशुल्क है, इससे प्रो नहीं खुलता।",
+    proTiedSignedIn: "साइन इन से प्रो नहीं खुलता",
     signIn: "साइन इन",
     tagline: "अपनी परम्परा को जानिए",
-    proViaGoogle: "आपके Google साइन इन से खुला है",
+    proViaGoogle: "Google से साइन इन है",
     signInFailed: "Google साइन इन पूरा नहीं हुआ। कृपया फिर कोशिश करें।",
     legal: "कानूनी जानकारी", privacyPolicy: "गोपनीयता नीति", termsConditions: "नियम और शर्तें", refundPolicy: "रिफ़ंड नीति",
     about: "परिचय और स्रोत",
@@ -264,6 +266,8 @@ function loadState() {
     if (raw) {
       var p = JSON.parse(raw);
       for (var k in d) if (typeof p[k] !== "undefined") d[k] = p[k];
+      // Clear any legacy "google" plan: signing in never granted Pro.
+      if (d.pro && d.pro.plan === "google") d.pro = null;
     }
   } catch (e) { /* private mode, defaults */ }
   return d;
@@ -282,6 +286,9 @@ function setTheme(mode) {
 }
 function isPro() {
   if (!state.pro) return false;
+  // A legacy "google" plan from the old sign-in unlock is not Pro:
+  // signing in is free and never unlocks Pro. Clear it on sight.
+  if (state.pro.plan === "google") { state.pro = null; saveState(); return false; }
   if (state.pro.expiresAt && Date.now() > state.pro.expiresAt) { state.pro = null; saveState(); return false; }
   return true;
 }
@@ -329,9 +336,11 @@ function streakInfo() {
    override it by assigning window.SANATAN_GOOGLE_CLIENT_ID before the
    app loads. The Client ID's authorised JavaScript origins in Google
    Cloud Console must include this site's origin.
-   The Google session is stored on this device. While a session
-   exists, Pro is unlocked (a paid plan is never touched by signing in
-   or out) and each text resumes on the verse after the last one read. */
+   The Google session is stored on this device. Signing in is free
+   and never unlocks Pro: Pro only comes from buying a plan, and a
+   paid plan is never touched by signing in or out. Signing in ties
+   saves, likes, streak and reading position to the account, and
+   each text resumes on the verse after the last one read. */
 var GOOGLE_CLIENT_ID = "342264556763-u76gmthiil99ahh3f20rvbivokjb9qp6.apps.googleusercontent.com";
 var GOOGLE_USER_KEY = "sanatan-scroll-google-user";
 function googleClientId() {
@@ -358,22 +367,18 @@ function setGoogleUser(user) {
     if (user) localStorage.setItem(GOOGLE_USER_KEY, JSON.stringify(user));
     else localStorage.removeItem(GOOGLE_USER_KEY);
   } catch (e) { /* storage unavailable: the session lasts in memory only */ }
-  if (user) linkGooglePro(); else unlinkGooglePro();
+  // Signing in or out never grants or removes Pro. Just clear any
+  // legacy "google" plan left over from the old sign-in unlock.
+  clearLegacyGooglePro();
 }
-function linkGooglePro() {
-  // Signing in unlocks Pro. A paid plan (daily, monthly, yearly,
-  // trial) is never overwritten by linking.
-  if (isPro()) return;
-  state.pro = { plan: "google", expiresAt: null };
-  saveState();
-}
-function unlinkGooglePro() {
-  // Signing out ends the Google unlock only; a paid plan stays.
+function clearLegacyGooglePro() {
   if (state.pro && state.pro.plan === "google") {
     state.pro = null;
     saveState();
   }
 }
+function linkGooglePro() { clearLegacyGooglePro(); }
+function unlinkGooglePro() { clearLegacyGooglePro(); }
 var gisScriptPromise = null;
 function loadGisScript() {
   if (window.google && window.google.accounts && window.google.accounts.oauth2) return Promise.resolve();
@@ -1254,11 +1259,9 @@ function renderProfile() {
   var panel = el("panelView");
   var s = streakInfo();
   var pro = isPro();
-  var googlePlan = pro && state.pro && state.pro.plan === "google";
+  var googlePlan = false; // signing in never grants Pro, so there is no Google Pro plan
   var proLine = pro
-    ? googlePlan
-      ? tt.proActive + " · " + tt.proViaGoogle
-      : tt.proActive + (state.pro.expiresAt ? " · " + tt.proUntil + " " + new Date(state.pro.expiresAt).toLocaleDateString() : "")
+    ? tt.proActive + (state.pro.expiresAt ? " · " + tt.proUntil + " " + new Date(state.pro.expiresAt).toLocaleDateString() : "")
     : tt.notProYet;
   var accountHtml = googleUser
     ? '<div class="row">' +
@@ -1782,10 +1785,9 @@ function renderPaywall() {
       '<button type="button" class="cta" data-checkout="1">' + (canTrial ? esc(tt.startTrial) : esc(tt.subscribe)) + "</button>" +
       (googleUser
         ? '<p class="signedinline">' + esc(state.lang === "hi"
-            ? googleUser.name + " के रूप में साइन इन है, " + tt.proTiedSignedIn
-            : "Signed in as " + googleUser.name + ", " + tt.proTiedSignedIn) + "</p>"
-        : '<div class="googlewrap">' + googleButtonHtml() +
-          '<p class="fineprint">' + esc(tt.proTiedGoogle) + "</p></div>") +
+            ? googleUser.name + " के रूप में साइन इन है"
+            : "Signed in as " + googleUser.name) + "</p>"
+        : '<div class="googlewrap">' + googleButtonHtml() + "</div>") +
       '<p class="fineprint">' + esc(tt.checkoutNote) + "</p>";
   }
   slot.innerHTML = '<div class="modalback" role="dialog" aria-modal="true" aria-label="' + esc(tt.goPro) + '">' +
