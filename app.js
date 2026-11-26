@@ -5,7 +5,7 @@
    theme.css, lib/google.ts), rebuilt in plain JavaScript because the
    space is a full app with a server part and cannot be published as a
    static page. Same tokens, same layout, same components, same strings.
-   Verse text is real and bundled in data/corpus.json; the Sivananda
+   Verse text is real and bundled in data/corpus.json (Gita, curated Ramayana and Mahabharata openings, Chalisa); the Sivananda
    commentary is data/gita-comm.json, copied from the space.
    Saves, likes, streak, plan progress and Pro live in localStorage on
    this device (the space keeps them server side on the reader's
@@ -18,7 +18,7 @@
    never unlocks Pro, Pro only comes from buying a plan. Signing in
    saves verses, likes and streak, and resumes each text on the verse
    after the last one read.
-   Audio: Gita Chapter 1 in all three recorded voices, as in the space.
+   Audio: recorded server voices for all 1,231 verses in the library, streamed from Google Cloud Storage, with device text to speech as the fallback. Full Ramayana (19,328 verses) and Mahabharata (73,659 verses) texts load one book at a time from the same storage, Sanskrit and English only, no Hindi yet, no audio for the full texts.
    No em dashes are used anywhere in this file, by Ankit's rule. */
 
 "use strict";
@@ -93,7 +93,7 @@ var STR = {
     signInFailed: "Google sign-in did not complete. Please try again.",
     legal: "Legal", privacyPolicy: "Privacy Policy", termsConditions: "Terms and Conditions", refundPolicy: "Refund Policy",
     about: "About & sources",
-    aboutBody: "ScrollVerse is a verse-by-verse scroll through India's sacred texts, one shloka per screen, in canonical order, never an algorithmic feed. The Sanskrit texts are public domain. Gita English translation: Shri Purohit Swami (1935). Word meanings and commentary: Swami Sivananda. Mahabharata text: BORI Critical Edition. Ramayana and Hanuman Chalisa texts come from open datasets of the public-domain originals. Study aids marked AI are generated once per verse and stored; treat them as a reading companion, not a guru.",
+    aboutBody: "ScrollVerse is a verse-by-verse scroll through India's sacred texts, one shloka per screen, in canonical order, never an algorithmic feed. The Sanskrit texts are public domain. Gita English translation: Shri Purohit Swami (1935). Word meanings and commentary: Swami Sivananda. Mahabharata text: BORI Critical Edition. The full Ramayana (19,328 verses) and full Mahabharata (73,659 verses) are here too, in the public-domain English of Manmatha Nath Dutt, verse-aligned via the Itihasa corpus, Sanskrit and English only, Hindi not yet available. Hanuman Chalisa text comes from open datasets of the public-domain original. Study aids marked AI are generated once per verse and stored; treat them as a reading companion, not a guru.",
     cancelPro: "Cancel Pro", proActive: "Pro is active", proUntil: "Renews / ends", planLabel: "Plan",
     trialNote: "7-day free trial, then", perMonth: "/month", perYear: "/year", perDay: "/day",
     mostPopular: "Most popular", bestValue: "Best value",
@@ -108,7 +108,7 @@ var STR = {
     startTrial: "Start 7-day free trial", subscribe: "Subscribe",
     checkoutNote: "Web preview, checkout is simulated here, no real charge. In the app this is UPI Autopay.",
     welcomeTitle: "Scroll the shlokas, not the feed.",
-    welcomeBody: "One verse per screen. Sanskrit first, meaning one tap away. What brings you here?",
+    welcomeBody: "One verse per screen. Your language first, Sanskrit last. What brings you here?",
     goals: ["Peace of mind", "Focus", "Wisdom", "A daily habit"], skip: "Skip",
     verses: "verses", shareFailed: "Could not create the share card.",
     copiedCard: "Card image downloaded, share it anywhere.", managePro: "Manage Pro",
@@ -135,7 +135,17 @@ var STR = {
     audioErrorNoHindiVoice: "No Hindi voice is installed on this device, so the Sanskrit and Hindi can't be read aloud yet. Add a Hindi voice in your device's speech / text-to-speech settings, then tap Retry.",
     chooseText: "Choose a text", daysWord: "days", markDoneShort: "Mark done",
     keepGoing: "Keep going, verse after verse, hands-free", freeWord: "Free",
-    proGitaNote: "Deep Study, Related Verses and listening in Hindi & English are now open on every verse. Tap the headphones on any verse to listen."
+    proGitaNote: "Deep Study, Related Verses and listening in Hindi & English are now open on every verse. Tap the headphones on any verse to listen.",
+    fullText: "Full text", chooseSection: "Choose a book", curatedOpenings: "Curated openings",
+    fullTextNote: "The full text loads one book at a time from the library, no app to install.",
+    editionRamayana: "Valmiki Ramayana, English by Manmatha Nath Dutt (1891-1894), public domain, verse-aligned via the Itihasa corpus.",
+    editionMahabharata: "Mahabharata, English by Manmatha Nath Dutt (1895-1905), public domain, verse-aligned via the Itihasa corpus.",
+    fullTextNoHindi: "Hindi meaning is not available for the full text yet, Sanskrit and English only.",
+    alsoInGita: "This passage is also the Bhagavad Gita",
+    readInGita: "Read it in the Gita, Chapter",
+    resumeAt: "Resume", startFromBeginning: "Start from the beginning",
+    loadingFullText: "Loading the book…", fullTextFailed: "That book could not be loaded. Check your connection and try again.",
+    sargaWord: "Sarga", adhyayaWord: "Adhyaya", booksWord: "books"
   },
   hi: {
     scroll: "स्क्रॉल", discover: "खोजें", plans: "योजनाएँ", saved: "सहेजे हुए", profile: "प्रोफ़ाइल",
@@ -169,7 +179,7 @@ var STR = {
     signInFailed: "Google साइन इन पूरा नहीं हुआ। कृपया फिर कोशिश करें।",
     legal: "कानूनी जानकारी", privacyPolicy: "गोपनीयता नीति", termsConditions: "नियम और शर्तें", refundPolicy: "रिफ़ंड नीति",
     about: "परिचय और स्रोत",
-    aboutBody: "स्क्रॉलवर्स भारत के पवित्र ग्रन्थों की श्लोक-दर-श्लोक यात्रा है, एक स्क्रीन पर एक श्लोक, मूल क्रम में, कोई एल्गोरिद्म फ़ीड नहीं। संस्कृत मूल पाठ सार्वजनिक डोमेन में है। गीता का अंग्रेज़ी अनुवाद: श्री पुरोहित स्वामी (1935)। शब्दार्थ और टीका: स्वामी शिवानन्द। महाभारत पाठ: भण्डारकर समीक्षित संस्करण। रामायण और हनुमान चालीसा के पाठ सार्वजनिक डोमेन मूल के खुले डेटासेट से हैं। AI चिह्नित अध्ययन सामग्री हर श्लोक के लिए एक बार बनाकर सहेजी जाती है; इसे गुरु नहीं, पठन-साथी समझिए।",
+    aboutBody: "स्क्रॉलवर्स भारत के पवित्र ग्रन्थों की श्लोक-दर-श्लोक यात्रा है, एक स्क्रीन पर एक श्लोक, मूल क्रम में, कोई एल्गोरिद्म फ़ीड नहीं। संस्कृत मूल पाठ सार्वजनिक डोमेन में है। गीता का अंग्रेज़ी अनुवाद: श्री पुरोहित स्वामी (1935)। शब्दार्थ और टीका: स्वामी शिवानन्द। महाभारत पाठ: भण्डारकर समीक्षित संस्करण। पूरी रामायण (19,328 श्लोक) और पूरा महाभारत (73,659 श्लोक) भी यहाँ हैं, मन्मथ नाथ दत्त के सार्वजनिक डोमेन अंग्रेज़ी अनुवाद में, संस्कृत और अंग्रेज़ी में ही, हिन्दी अभी नहीं है। हनुमान चालीसा का पाठ सार्वजनिक डोमेन मूल के खुले डेटासेट से है। AI चिह्नित अध्ययन सामग्री हर श्लोक के लिए एक बार बनाकर सहेजी जाती है; इसे गुरु नहीं, पठन-साथी समझिए।",
     cancelPro: "प्रो रद्द करें", proActive: "प्रो सक्रिय है", proUntil: "नवीनीकरण / समाप्ति", planLabel: "योजना",
     trialNote: "7 दिन निःशुल्क, फिर", perMonth: "/माह", perYear: "/वर्ष", perDay: "/दिन",
     mostPopular: "सबसे लोकप्रिय", bestValue: "सबसे किफ़ायती",
@@ -184,7 +194,7 @@ var STR = {
     startTrial: "7 दिन का निःशुल्क परीक्षण शुरू करें", subscribe: "सदस्यता लें",
     checkoutNote: "वेब पूर्वावलोकन, यहाँ भुगतान अनुकरण मात्र है, कोई वास्तविक शुल्क नहीं। ऐप में यह UPI ऑटोपे होगा।",
     welcomeTitle: "फ़ीड नहीं, श्लोक स्क्रॉल कीजिए।",
-    welcomeBody: "एक स्क्रीन, एक श्लोक। पहले संस्कृत, अर्थ एक दबाव पर। आप यहाँ क्यों आए हैं?",
+    welcomeBody: "एक स्क्रीन, एक श्लोक। पहले आपकी भाषा, संस्कृत अंत में। आप यहाँ क्यों आए हैं?",
     goals: ["मन की शांति", "एकाग्रता", "ज्ञान", "रोज़ की आदत"], skip: "छोड़ें",
     verses: "श्लोक", shareFailed: "साझा कार्ड नहीं बन सका।",
     copiedCard: "कार्ड छवि डाउनलोड हो गई, कहीं भी साझा कीजिए।", managePro: "प्रो प्रबन्धन",
@@ -211,7 +221,17 @@ var STR = {
     audioErrorNoHindiVoice: "इस डिवाइस पर हिन्दी आवाज़ नहीं है, इसलिए संस्कृत और हिन्दी अभी सुनाए नहीं जा सकते। डिवाइस की स्पीच / टेक्स्ट-टू-स्पीच सेटिंग में हिन्दी आवाज़ जोड़कर फिर कोशिश करें।",
     chooseText: "ग्रन्थ चुनें", daysWord: "दिन", markDoneShort: "पूर्ण करें",
     keepGoing: "एक के बाद एक, अपने आप आगे बढ़े", freeWord: "निःशुल्क",
-    proGitaNote: "गहन अध्ययन, सम्बन्धित श्लोक और हिन्दी-अंग्रेज़ी में सुनना अब हर श्लोक पर खुला है। किसी भी श्लोक पर हेडफ़ोन दबाकर सुनें।"
+    proGitaNote: "गहन अध्ययन, सम्बन्धित श्लोक और हिन्दी-अंग्रेज़ी में सुनना अब हर श्लोक पर खुला है। किसी भी श्लोक पर हेडफ़ोन दबाकर सुनें।",
+    fullText: "पूरा ग्रन्थ", chooseSection: "पुस्तक चुनें", curatedOpenings: "चुने हुए आरम्भ",
+    fullTextNote: "पूरा ग्रन्थ एक बार में एक पुस्तक लोड करता है, कोई ऐप नहीं चाहिए।",
+    editionRamayana: "वाल्मीकि रामायण, अंग्रेज़ी: मन्मथ नाथ दत्त (1891-1894), सार्वजनिक डोमेन, Itihasa corpus से श्लोक-मिलान।",
+    editionMahabharata: "महाभारत, अंग्रेज़ी: मन्मथ नाथ दत्त (1895-1905), सार्वजनिक डोमेन, Itihasa corpus से श्लोक-मिलान।",
+    fullTextNoHindi: "पूरे ग्रन्थ का हिन्दी अर्थ अभी नहीं है, केवल संस्कृत और अंग्रेज़ी।",
+    alsoInGita: "यह अंश भगवद्गीता भी है",
+    readInGita: "गीता में पढ़ें, अध्याय",
+    resumeAt: "वहीं से पढ़ें", startFromBeginning: "शुरुआत से पढ़ें",
+    loadingFullText: "पुस्तक लोड हो रही है…", fullTextFailed: "वह पुस्तक लोड नहीं हो सकी। कनेक्शन जाँचकर फिर कोशिश करें।",
+    sargaWord: "सर्ग", adhyayaWord: "अध्याय", booksWord: "पुस्तकें"
   }
 };
 function t() { return STR[state.lang] || STR.en; }
@@ -220,8 +240,8 @@ function t() { return STR[state.lang] || STR.en; }
 var TEXT_ORDER = ["gita", "ramayana", "mahabharata", "chalisa"];
 var TEXT_META = {
   gita: { name: "Bhagavad Gita", nameHi: "भगवद्गीता", taglineEn: "The full Gita, verse by verse", taglineHi: "पूरी गीता, एक-एक श्लोक" },
-  ramayana: { name: "Ramayana", nameHi: "रामायण", taglineEn: "Curated scroll · openings of the seven Kandas", taglineHi: "चुना हुआ संग्रह · सातों काण्डों के आरम्भ" },
-  mahabharata: { name: "Mahabharata", nameHi: "महाभारत", taglineEn: "Curated scroll · Critical Edition text", taglineHi: "चुना हुआ संग्रह · समीक्षित संस्करण" },
+  ramayana: { name: "Ramayana", nameHi: "रामायण", taglineEn: "Full text · 19,328 verses, seven Kandas", taglineHi: "पूरा ग्रन्थ · 19,328 श्लोक, सात काण्ड" },
+  mahabharata: { name: "Mahabharata", nameHi: "महाभारत", taglineEn: "Full text · 73,659 verses, eighteen Parvas", taglineHi: "पूरा ग्रन्थ · 73,659 श्लोक, अठारह पर्व" },
   chalisa: { name: "Hanuman Chalisa", nameHi: "हनुमान चालीसा", taglineEn: "Tulsidas's forty verses, complete", taglineHi: "तुलसीदास के चालीस पद, सम्पूर्ण" }
 };
 var RAMA_SEC_HI = { "kanda-1": "बाल काण्ड", "kanda-2": "अयोध्या काण्ड", "kanda-3": "अरण्य काण्ड", "kanda-4": "किष्किन्धा काण्ड", "kanda-5": "सुन्दर काण्ड", "kanda-6": "युद्ध काण्ड", "kanda-7": "उत्तर काण्ड" };
@@ -245,11 +265,42 @@ var PLAN_DEFS = [
   { id: "monthly", per: "perMonth", badge: "mostPopular" },
   { id: "yearly", per: "perYear", badge: "bestValue" }
 ];
-var AUDIO_LANGS = ["sanskrit", "hindi", "english"];
-var AUDIO_SET = {};
-(function () {
-  for (var v = 1; v <= 47; v++) for (var l = 0; l < 3; l++) AUDIO_SET["gita-1-" + v + "-" + AUDIO_LANGS[l]] = true;
-})();
+/* Recorded voices stream from Google Cloud Storage, one file per verse
+   per language, for all 1,231 verses in the library (Gita 2,097 files,
+   Ramayana openings 996, Mahabharata openings 310, Chalisa 129). A verse
+   with no recording falls back to the device voice, as before. Only
+   Gita Chapter 1 is also bundled locally in audio/, as a fallback if a
+   GCS fetch fails; the full 2,097 Gita files are not in the repo. */
+var AUDIO_BASE = "https://storage.googleapis.com/scrollverse-audio/";
+var NO_ENGLISH_GITA = { "4:33": 1, "6:38": 1, "8:1": 1, "10:15": 1, "12:3": 1, "12:18": 1 };
+function audioBaseName(verse, lang) {
+  if (verse.fullText) return null;   // no audio for the full texts
+  if (verse.textKey === "gita" && verse.c) {
+    if (lang === "english" && NO_ENGLISH_GITA[verse.c + ":" + verse.v]) return null;
+    return "gita/gita-" + verse.c + "-" + verse.v + "-" + lang;
+  }
+  if (verse.textKey === "ramayana" && verse.kandaNum && verse.sarga) {
+    return "ramayana/ramayana-kanda-" + verse.kandaNum + "-" + verse.sarga + "-" + verse.n + "-" + lang;
+  }
+  if (verse.textKey === "mahabharata" && verse.audioSection && verse.chap != null) {
+    if (lang === "english") return null;   // openings have Sanskrit and Hindi only
+    return "mahabharata/mahabharata-" + verse.audioSection + "-" + verse.chap + "-" + verse.n + "-" + lang;
+  }
+  if (verse.textKey === "chalisa" && verse.n != null) {
+    return "chalisa/chalisa-" + verse.n + "-" + lang;
+  }
+  return null;
+}
+function audioFileFor(verse, lang) {
+  var base = audioBaseName(verse, lang);
+  return base ? AUDIO_BASE + base + ".mp3" : null;
+}
+function audioLocalFallback(verse, lang) {
+  if (verse.textKey === "gita" && verse.c === 1) {
+    return "audio/gita/gita-1-" + verse.v + "-" + lang + ".mp3";
+  }
+  return null;
+}
 var GOAL_KEYS = ["Peace of mind", "Focus", "Wisdom", "A daily habit"];
 
 /* ---------- State (localStorage, this device only) ---------- */
@@ -493,7 +544,8 @@ function buildTexts() {
       key: v.key, textKey: "ramayana",
       ref: "Ramayana · " + v.sectionName + " " + v.sarga + "." + v.n, refShort: v.sarga + "." + v.n,
       section: v.sectionName, sectionHi: RAMA_SEC_HI[v.section] || v.sectionName,
-      sa: v.sa, en: v.en || undefined, sectionId: v.section
+      sa: v.sa, en: v.en || undefined, sectionId: v.section,
+      kandaNum: Number(String(v.section).split("-")[1]) || 0, sarga: v.sarga, n: v.n
     };
   });
   var ramaSections = corpus.ramayana.sections.map(function (s) {
@@ -508,7 +560,8 @@ function buildTexts() {
       ref: "Mahabharata · " + v.book + "." + v.chap + "." + v.n, refShort: v.chap + "." + v.n,
       section: (MB_SECTIONS.filter(function (s) { return s.id === v.section; })[0] || {}).name || v.section,
       sectionHi: (MB_SECTIONS.filter(function (s) { return s.id === v.section; })[0] || {}).nameHi || v.section,
-      sa: v.sa, speaker: v.speaker || undefined, sectionId: v.section
+      sa: v.sa, speaker: v.speaker || undefined, sectionId: v.section,
+      audioSection: v.section, chap: v.chap, n: v.n
     };
   });
   var mbSections = MB_SECTIONS.map(function (s) {
@@ -524,7 +577,7 @@ function buildTexts() {
       ref: v.type === "doha" ? "Hanuman Chalisa · Doha " + v.num : "Hanuman Chalisa · Chaupai " + v.num,
       refShort: v.type === "doha" ? "Doha " + v.num : "" + v.num,
       section: "Hanuman Chalisa", sectionHi: "हनुमान चालीसा",
-      sa: v.sa, hi: v.hi || undefined, en: v.en || undefined
+      sa: v.sa, hi: v.hi || undefined, en: v.en || undefined, n: v.n
     };
   });
   TEXTS.chalisa = { key: "chalisa", verses: chalVerses, sections: [{ id: "chalisa", name: "Hanuman Chalisa", nameHi: "हनुमान चालीसा", startIndex: 0, count: chalVerses.length }] };
@@ -533,6 +586,227 @@ function buildTexts() {
     TEXTS[k].verses.forEach(function (v) { VERSE_BY_KEY[v.key] = v; });
   });
   PLANS = buildPlans();
+}
+
+/* ---------- Full texts (Ramayana 19,328, Mahabharata 73,659) ----------
+   The full epics live as one JSON per book in the same GCS bucket, under
+   texts/ramayana/<section>.json and texts/mahabharata/<section>.json.
+   One book loads at a time and is cached in the browser. The curated
+   openings bundled in data/corpus.json stay the default view until a
+   book is picked. Hindi is null in the full texts, so those verses show
+   Sanskrit and English only, and there is no audio for them, the device
+   voice reads them instead. Honest counts only, never 24,000 / 100,000. */
+var FULL_TEXT_BASE = AUDIO_BASE + "texts/";
+var FULL_RAMA_HI = { bala: "बाल काण्ड", ayodhya: "अयोध्या काण्ड", aranya: "अरण्य काण्ड", kishkindha: "किष्किन्धा काण्ड", sundara: "सुन्दर काण्ड", yuddha: "युद्ध काण्ड", uttara: "उत्तर काण्ड" };
+var FULL_MAHA_HI = { adi: "आदि पर्व", sabha: "सभा पर्व", aranyaka: "वन पर्व", virata: "विराट पर्व", udyoga: "उद्योग पर्व", bhishma: "भीष्म पर्व", drona: "द्रोण पर्व", karna: "कर्ण पर्व", salya: "शल्य पर्व", sauptika: "सौप्तिक पर्व", stri: "स्त्री पर्व", shanti: "शान्ति पर्व", anushasana: "अनुशासन पर्व", ashvamedhika: "अश्वमेधिक पर्व", ashramavasika: "आश्रमवासिक पर्व", mausala: "मौसल पर्व", mahaprasthanika: "महाप्रस्थानिक पर्व", svargarohana: "स्वर्गारोहण पर्व" };
+var FULL_TEXT_META = {
+  ramayana: [
+    { id: "bala", name: "Bala Kanda", chapters: 77, verses: 1785 },
+    { id: "ayodhya", name: "Ayodhya Kanda", chapters: 119, verses: 3641 },
+    { id: "aranya", name: "Aranya Kanda", chapters: 73, verses: 1968 },
+    { id: "kishkindha", name: "Kishkindha Kanda", chapters: 67, verses: 2044 },
+    { id: "sundara", name: "Sundara Kanda", chapters: 67, verses: 2302 },
+    { id: "yuddha", name: "Yuddha Kanda", chapters: 127, verses: 4780 },
+    { id: "uttara", name: "Uttara Kanda", chapters: 111, verses: 2808 }
+  ],
+  mahabharata: [
+    { id: "adi", name: "Adi Parva", chapters: 234, verses: 7290 },
+    { id: "sabha", name: "Sabha Parva", chapters: 81, verses: 2366 },
+    { id: "aranyaka", name: "Aranyaka Parva", chapters: 315, verses: 10109 },
+    { id: "virata", name: "Virata Parva", chapters: 72, verses: 1924 },
+    { id: "udyoga", name: "Udyoga Parva", chapters: 194, verses: 6223 },
+    { id: "bhishma", name: "Bhishma Parva", chapters: 124, verses: 5023 },
+    { id: "drona", name: "Drona Parva", chapters: 203, verses: 8748 },
+    { id: "karna", name: "Karna Parva", chapters: 96, verses: 4399 },
+    { id: "salya", name: "Salya Parva", chapters: 65, verses: 3006 },
+    { id: "sauptika", name: "Sauptika Parva", chapters: 18, verses: 708 },
+    { id: "stri", name: "Stri Parva", chapters: 27, verses: 724 },
+    { id: "shanti", name: "Shanti Parva", chapters: 365, verses: 12340 },
+    { id: "anushasana", name: "Anushasana Parva", chapters: 168, verses: 6820 },
+    { id: "ashvamedhika", name: "Ashvamedhika Parva", chapters: 92, verses: 2407 },
+    { id: "ashramavasika", name: "Ashramavasika Parva", chapters: 39, verses: 962 },
+    { id: "mausala", name: "Mausala Parva", chapters: 8, verses: 264 },
+    { id: "mahaprasthanika", name: "Mahaprasthanika Parva", chapters: 3, verses: 89 },
+    { id: "svargarohana", name: "Svargarohana Parva", chapters: 6, verses: 257 }
+  ]
+};
+var FULL_TEXT_TOTALS = { ramayana: 19328, mahabharata: 73659 };
+var FULL_CACHE = {};   // "ramayana:bala" -> { meta, sectionName, verses, chapters }
+var FULL_LOADING = {}; // "ramayana:bala" -> Promise
+var currentFullFeed = null;  // { collection, section } when a full book is on screen
+var prevFeed = null;         // feed to return to after a spec (mood/plan) closes
+
+function fullTextUrl(collection, section) {
+  return FULL_TEXT_BASE + collection + "/" + section + ".json";
+}
+function fullSectionName(collection, section) {
+  var list = FULL_TEXT_META[collection] || [];
+  for (var i = 0; i < list.length; i++) if (list[i].id === section) return list[i].name;
+  return section;
+}
+function loadFullSection(collection, section) {
+  var cacheKey = collection + ":" + section;
+  if (FULL_CACHE[cacheKey]) return Promise.resolve(FULL_CACHE[cacheKey]);
+  if (FULL_LOADING[cacheKey]) return FULL_LOADING[cacheKey];
+  var p = fetch(fullTextUrl(collection, section)).then(function (r) {
+    if (!r.ok) throw new Error("full text load failed");
+    return r.json();
+  }).then(function (data) {
+    var unit = collection === "ramayana" ? "Sarga" : "Adhyaya";
+    var unitHi = collection === "ramayana" ? "सर्ग" : "अध्याय";
+    var sectionName = data.sectionName || fullSectionName(collection, section);
+    var sectionHi = collection === "ramayana" ? (FULL_RAMA_HI[section] || sectionName) : (FULL_MAHA_HI[section] || sectionName);
+    var verses = (data.verses || []).map(function (v) {
+      var parts = String(v.key || "").split(":");
+      var chap = parts.length > 2 ? Number(parts[2]) : 0;
+      var num = parts.length > 3 ? Number(parts[3]) : 0;
+      return {
+        key: v.key, textKey: collection, feedKey: cacheKey, fullText: true, fullSection: section,
+        ref: (collection === "ramayana" ? "Ramayana" : "Mahabharata") + " · " + sectionName + " " + v.ref,
+        refShort: v.ref,
+        section: sectionName + " · " + unit + " " + chap, sectionHi: sectionHi + " · " + unitHi + " " + chap,
+        sa: v.sanskrit, hi: undefined, en: v.english || undefined,
+        chapNum: chap, verseNum: num, gitaChapter: v.alsoInGita ? v.gitaChapter : undefined
+      };
+    });
+    var chapters = (data.chapters || []).map(function (c) { return { n: c.n, count: c.count }; });
+    var idx = 0;
+    chapters.forEach(function (c) { c.startIndex = idx; idx += c.count; });
+    var built = { meta: data, sectionName: sectionName, sectionHi: sectionHi, verses: verses, chapters: chapters, unit: unit, unitHi: unitHi };
+    verses.forEach(function (v) { VERSE_BY_KEY[v.key] = v; });
+    FULL_CACHE[cacheKey] = built;
+    delete FULL_LOADING[cacheKey];
+    return built;
+  }).catch(function (err) {
+    delete FULL_LOADING[cacheKey];
+    throw err;
+  });
+  FULL_LOADING[cacheKey] = p;
+  return p;
+}
+function startFullFeed(collection, section, startIndex) {
+  return loadFullSection(collection, section).then(function (built) {
+    textKey = collection;
+    spec = null;
+    currentFullFeed = { collection: collection, section: section };
+    screen = "scroll";
+    el("feedView").classList.remove("hidden");
+    el("panelView").classList.add("hidden");
+    var posKey = collection + ":" + section;
+    var start = typeof startIndex === "number" ? startIndex : positionForList(posKey, built.verses);
+    startFeed(built.verses, start);
+    renderAllChrome();
+    return built;
+  });
+}
+function fullTextPositionLabel(collection, section) {
+  var pos = state.positions[collection + ":" + section];
+  if (!pos || !pos.verseKey) return null;
+  var built = FULL_CACHE[collection + ":" + section];
+  var verse = null;
+  if (built) {
+    for (var i = 0; i < built.verses.length; i++) {
+      if (built.verses[i].key === pos.verseKey) { verse = built.verses[i]; break; }
+    }
+  }
+  if (verse) return verse.section + " " + verse.refShort;
+  return pos.verseKey;
+}
+function openFullTextPicker(collection) {
+  var tt = t();
+  var meta = TEXT_META[collection];
+  var books = FULL_TEXT_META[collection];
+  var total = FULL_TEXT_TOTALS[collection];
+  var curatedCount = TEXTS[collection].verses.length;
+  var slot = el("sheetSlot");
+  var body = '<div class="picknote">' + esc(tt.fullTextNote) + '</div>' +
+    '<p class="pickcredit">' + esc(collection === "ramayana" ? tt.editionRamayana : tt.editionMahabharata) + '</p>' +
+    '<div class="picklist">' +
+    books.map(function (b) {
+      var posLabel = fullTextPositionLabel(collection, b.id);
+      var name = state.lang === "hi" ? ((collection === "ramayana" ? FULL_RAMA_HI[b.id] : FULL_MAHA_HI[b.id]) || b.name) : b.name;
+      return '<button type="button" class="pickrow" data-book="' + esc(b.id) + '">' +
+        '<span class="main"><span class="t">' + esc(name) + '</span>' +
+        '<span class="s">' + b.chapters + ' ' + esc(state.lang === "hi" ? (collection === "ramayana" ? tt.sargaWord : tt.adhyayaWord) : (collection === "ramayana" ? "Sargas" : "Adhyayas")) + ' · ' + b.verses + ' ' + esc(tt.verses) + '</span>' +
+        (posLabel ? '<span class="r">' + esc(tt.resumeAt) + ' · ' + esc(posLabel) + '</span>' : '') +
+        '</span>' + I.chevron + '</button>';
+    }).join("") + '</div>' +
+    '<button type="button" class="pickcurated" data-curated="1">' + esc(tt.curatedOpenings) + ' · ' + curatedCount + ' ' + esc(tt.verses) + '</button>';
+  slot.innerHTML = '<div class="sheetback" role="dialog" aria-modal="true" aria-label="' + esc(state.lang === "hi" ? meta.nameHi : meta.name) + '">' +
+    '<div class="scrim" data-close="1"></div>' +
+    '<div class="sheet tall"><div class="sheet-head"><div class="row"><div>' +
+    '<p class="ref">' + esc(state.lang === "hi" ? meta.nameHi : meta.name) + ' · ' + esc(tt.fullText) + '</p>' +
+    '<p class="sa">' + esc(total + ' ' + tt.verses + ' · ' + books.length + ' ' + tt.booksWord) + '</p></div>' +
+    '<button type="button" class="sheet-x" data-close="1" aria-label="' + esc(tt.close) + '">' + I.x + '</button></div></div>' +
+    '<div class="sheet-body rail-scroll">' + body + '</div></div></div>';
+  slot.querySelectorAll("[data-close]").forEach(function (b) { b.addEventListener("click", closeSheets); });
+  slot.querySelectorAll("[data-book]").forEach(function (b) {
+    b.addEventListener("click", function () { openFullChapterPicker(collection, b.getAttribute("data-book")); });
+  });
+  var cur = slot.querySelector("[data-curated]");
+  if (cur) cur.addEventListener("click", function () {
+    closeSheets();
+    selectTextCurated(collection);
+  });
+}
+function selectTextCurated(collection) {
+  textKey = collection;
+  spec = null;
+  currentFullFeed = null;
+  screen = "scroll";
+  el("feedView").classList.remove("hidden");
+  el("panelView").classList.add("hidden");
+  startFeed(TEXTS[collection].verses, positionFor(collection));
+  renderAllChrome();
+}
+function openFullChapterPicker(collection, section) {
+  var tt = t();
+  var meta = TEXT_META[collection];
+  var slot = el("sheetSlot");
+  slot.innerHTML = '<div class="sheetback" role="dialog" aria-modal="true" aria-label="' + esc(fullSectionName(collection, section)) + '">' +
+    '<div class="scrim" data-close="1"></div>' +
+    '<div class="sheet tall"><div class="sheet-head"><div class="row"><div>' +
+    '<p class="ref">' + esc(fullSectionName(collection, section)) + '</p>' +
+    '<p class="sa">' + esc(tt.loadingFullText) + '</p></div>' +
+    '<button type="button" class="sheet-x" data-close="1" aria-label="' + esc(tt.close) + '">' + I.x + '</button></div></div>' +
+    '<div class="sheet-body rail-scroll"><p class="loadmsg">' + esc(tt.loadingFullText) + '</p></div></div></div>';
+  slot.querySelectorAll("[data-close]").forEach(function (b) { b.addEventListener("click", closeSheets); });
+  loadFullSection(collection, section).then(function (built) {
+    var posKey = collection + ":" + section;
+    var pos = state.positions[posKey];
+    var rows = built.chapters.map(function (c) {
+      return '<button type="button" class="pickrow" data-chapter="' + c.n + '">' +
+        '<span class="main"><span class="t">' + esc(built.unit + " " + c.n) + '</span>' +
+        '<span class="s">' + c.count + ' ' + esc(tt.verses) + '</span></span>' + I.chevron + '</button>';
+    }).join("");
+    var resumeBtn = pos && pos.verseKey
+      ? '<button type="button" class="pickresume" data-resume="1">' + esc(tt.resumeAt) + '</button>' : "";
+    var startBtn = '<button type="button" class="pickresume" data-start="1">' + esc(tt.startFromBeginning) + '</button>';
+    slot.innerHTML = '<div class="sheetback" role="dialog" aria-modal="true" aria-label="' + esc(built.sectionName) + '">' +
+      '<div class="scrim" data-close="1"></div>' +
+      '<div class="sheet tall"><div class="sheet-head"><div class="row"><div>' +
+      '<p class="ref">' + esc(built.sectionName) + '</p>' +
+      '<p class="sa">' + esc(built.verses.length + ' ' + tt.verses) + '</p></div>' +
+      '<button type="button" class="sheet-x" data-close="1" aria-label="' + esc(tt.close) + '">' + I.x + '</button></div>' +
+      '<div class="sheet-head2">' + resumeBtn + startBtn + '</div></div>' +
+      '<div class="sheet-body rail-scroll"><div class="picklist">' + rows + '</div></div></div></div>';
+    slot.querySelectorAll("[data-close]").forEach(function (b) { b.addEventListener("click", closeSheets); });
+    slot.querySelectorAll("[data-chapter]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var n = Number(b.getAttribute("data-chapter"));
+        var ch = null;
+        built.chapters.forEach(function (c) { if (c.n === n) ch = c; });
+        closeSheets();
+        startFullFeed(collection, section, ch ? ch.startIndex : 0);
+      });
+    });
+    var rb = slot.querySelector("[data-resume]");
+    if (rb) rb.addEventListener("click", function () { closeSheets(); startFullFeed(collection, section); });
+    var sb = slot.querySelector("[data-start]");
+    if (sb) sb.addEventListener("click", function () { closeSheets(); startFullFeed(collection, section, 0); });
+  }).catch(function () {
+    slot.querySelector(".sheet-body").innerHTML = '<p class="loadmsg">' + esc(tt.fullTextFailed) + '</p>';
+  });
 }
 function chunkPlan(id, nameEn, nameHi, descEn, descHi, textKey, totalDays, labelFn) {
   var verses = TEXTS[textKey].verses;
@@ -583,6 +857,15 @@ function searchVerses(query, limit) {
       if (hay.indexOf(q) !== -1) { out.push(v); if (out.length >= (limit || 40)) return out; }
     }
   }
+  // Any full-text book already loaded in this visit is searchable too.
+  for (var fk in FULL_CACHE) {
+    var fl = FULL_CACHE[fk].verses;
+    for (var j = 0; j < fl.length; j++) {
+      var fv = fl[j];
+      var fhay = (fv.ref + " " + fv.sa + " " + (fv.en || "")).toLowerCase();
+      if (fhay.indexOf(q) !== -1) { out.push(fv); if (out.length >= (limit || 40)) return out; }
+    }
+  }
   return out;
 }
 function loadCommentary(refShort, cb) {
@@ -608,9 +891,13 @@ function recordRead(verse) {
   var day = istToday();
   var arr = state.readDays[day] || (state.readDays[day] = []);
   if (arr.indexOf(verse.key) === -1) arr.push(verse.key);
-  var pos = state.positions[verse.textKey] || (state.positions[verse.textKey] = {});
+  // Full-text books resume per book (Kanda/Parva + sarga + verse), so the
+  // position is keyed by feedKey ("ramayana:bala") when the verse has one.
+  var posKey = verse.feedKey || verse.textKey;
+  var pos = state.positions[posKey] || (state.positions[posKey] = {});
   pos.verseKey = verse.key;
-  pos.verseIndex = TEXTS[verse.textKey].verses.indexOf(verse);
+  var idx = feedList.indexOf(verse);
+  pos.verseIndex = idx >= 0 ? idx : TEXTS[verse.textKey].verses.indexOf(verse);
   saveState();
   renderStreak();
 }
@@ -728,13 +1015,24 @@ function renderRailChapters() {
   var tt = t();
   var meta = TEXT_META[textKey];
   el("railHead").textContent = (state.lang === "hi" ? meta.nameHi : meta.name) + " · " + tt.chapters;
-  el("railList").innerHTML = TEXTS[textKey].sections.slice(0, 18).map(function (s, i) {
+  var sections = TEXTS[textKey].sections;
+  var full = null;
+  if (currentFullFeed && currentFullFeed.collection === textKey) {
+    full = FULL_CACHE[currentFullFeed.collection + ":" + currentFullFeed.section];
+    if (full) {
+      sections = full.chapters.map(function (c) {
+        return { id: "ch-" + c.n, name: full.unit + " " + c.n, nameHi: full.unitHi + " " + c.n, startIndex: c.startIndex, count: c.count };
+      });
+    }
+  }
+  var shown = sections.slice(0, 18);
+  el("railList").innerHTML = shown.map(function (s, i) {
     return '<li><button type="button" data-sec="' + i + '">' + esc(state.lang === "hi" ? s.nameHi : s.name) + "</button></li>";
   }).join("");
   el("railList").querySelectorAll("[data-sec]").forEach(function (b) {
     b.addEventListener("click", function () {
-      var s = TEXTS[textKey].sections[Number(b.getAttribute("data-sec"))];
-      var v = TEXTS[textKey].verses[s.startIndex];
+      var s = shown[Number(b.getAttribute("data-sec"))];
+      var v = full ? full.verses[s.startIndex] : TEXTS[textKey].verses[s.startIndex];
       if (v) jumpToVerse(v);
     });
   });
@@ -779,8 +1077,12 @@ function setScreen(s) {
   if (s === "profile") renderProfile();
 }
 function selectText(k) {
+  // Ramayana and Mahabharata open the book picker first: the full text
+  // (19,328 / 73,659 verses) or the curated openings bundled in the app.
+  if (k === "ramayana" || k === "mahabharata") { openFullTextPicker(k); return; }
   textKey = k;
   spec = null;
+  currentFullFeed = null;
   screen = "scroll";
   el("feedView").classList.remove("hidden");
   el("panelView").classList.add("hidden");
@@ -793,14 +1095,36 @@ function positionFor(k) {
   // resuming means opening on the NEXT verse (saved + 1), clamped to
   // the end of the text. No saved position means the reader has not
   // started this text, so it opens at the first verse.
-  var pos = state.positions[k];
+  return positionForList(k, TEXTS[k].verses);
+}
+function positionForList(key, list) {
+  var pos = state.positions[key];
   if (!pos) return 0;
-  var last = TEXTS[k].verses.length - 1;
+  var last = list.length - 1;
+  if (pos.verseKey) {
+    for (var j = 0; j < list.length; j++) {
+      if (list[j].key === pos.verseKey) return Math.min(j + 1, Math.max(0, last));
+    }
+  }
   return Math.min((pos.verseIndex || 0) + 1, Math.max(0, last));
 }
 function jumpToVerse(v) {
+  if (v.fullText && v.feedKey) {
+    // A saved or searched full-text verse: load its book, then open it.
+    var parts = v.feedKey.split(":");
+    closeSheets();
+    startFullFeed(parts[0], parts[1]).then(function (built) {
+      var i = built.verses.indexOf(v);
+      if (i < 0) {
+        for (var j = 0; j < built.verses.length; j++) if (built.verses[j].key === v.key) { i = j; break; }
+      }
+      if (i >= 0) startFeed(built.verses, i);
+    }).catch(function () { showNotice(t().fullTextFailed); });
+    return;
+  }
   textKey = v.textKey;
   spec = null;
+  currentFullFeed = null;
   closeSheets();
   setScreenSilent("scroll");
   el("feedView").classList.remove("hidden");
@@ -809,7 +1133,16 @@ function jumpToVerse(v) {
   startFeed(TEXTS[v.textKey].verses, TEXTS[v.textKey].verses.indexOf(v));
   renderAllChrome();
 }
+function jumpToGitaChapter(chapter) {
+  var verses = TEXTS.gita.verses;
+  var first = null;
+  for (var i = 0; i < verses.length; i++) {
+    if (verses[i].c === chapter) { first = verses[i]; break; }
+  }
+  if (first) jumpToVerse(first);
+}
 function openSpec(s) {
+  prevFeed = { list: feedList, index: activeIdx };
   spec = s;
   setScreenSilent("scroll");
   el("feedView").classList.remove("hidden");
@@ -821,7 +1154,14 @@ function openSpec(s) {
 }
 function closeSpec() {
   spec = null;
-  startFeed(TEXTS[textKey].verses, positionFor(textKey));
+  if (prevFeed && prevFeed.list && prevFeed.list.length) {
+    var list = prevFeed.list, index = prevFeed.index;
+    prevFeed = null;
+    startFeed(list, index);
+  } else {
+    prevFeed = null;
+    startFeed(TEXTS[textKey].verses, positionFor(textKey));
+  }
   renderAllChrome();
 }
 function renderAllChrome() { renderHeader(); renderNavs(); renderSpecBar(); }
@@ -864,8 +1204,9 @@ function wireCards(feed) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openStudy(verse); }
     });
     card.querySelectorAll("[data-act]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (e) {
         var act = btn.getAttribute("data-act");
+        if (act === "gita" && verse.gitaChapter) { if (e) e.stopPropagation(); jumpToGitaChapter(verse.gitaChapter); return; }
         if (act === "like") { toggleIn("likes", verse.key); refreshCardActions(card, verse); }
         if (act === "save") { toggleIn("saves", verse.key); refreshCardActions(card, verse); }
         if (act === "share") shareVerse(verse, btn);
@@ -937,6 +1278,7 @@ function verseCardHtml(verse) {
     '<p class="section' + (state.lang === "hi" ? "" : " tracked") + '">' + esc(state.lang === "hi" ? verse.sectionHi : verse.section) + "</p>" +
     (verse.speaker ? '<p class="speaker">' + esc(verse.speaker) + "</p>" : "") +
     '<div class="meanings">' + (state.lang === "hi" ? meaningBlock("hi", verse, true) + meaningBlock("en", verse, false) : meaningBlock("en", verse, true) + meaningBlock("hi", verse, false)) + sanskritBlock(verse) + "</div>" +
+    (verse.gitaChapter ? '<button type="button" class="gitalink" data-act="gita">' + esc(tt.alsoInGita) + " · " + esc(tt.readInGita) + " " + verse.gitaChapter + "</button>" : "") +
     '<p class="tappill">' + I.book + esc(tt.tapToUnderstand) + "</p>" +
     "</div>" +
     '<p class="ref">' + esc(verse.ref) + "</p>" +
@@ -957,6 +1299,9 @@ function meaningBlock(which, verse, primary) {
   var big = primary ? ' style="font-size:' + (1.55 * state.fontScale).toFixed(3) + 'rem"' : "";
   if (which === "hi") {
     if (!verse.hi) {
+      if (verse.fullText) {
+        return '<div><p class="meaning-label">' + esc(tt.hindiMeaning) + '</p><p class="missing">' + esc(tt.fullTextNoHindi) + "</p></div>";
+      }
       if (verse.textKey === "ramayana" || verse.textKey === "mahabharata") {
         return '<div><p class="meaning-label">' + esc(tt.hindiMeaning) + '</p><p class="missing">' + esc(tt.loadingMeaning) + "</p></div>";
       }
@@ -1133,9 +1478,10 @@ function renderDiscover() {
     '<section class="sectionblock" aria-label="' + esc(tt.chapters) + '"><h2>' + esc(tt.chooseText) + '</h2><div class="textgrid">' +
     TEXT_ORDER.map(function (k) {
       var meta = TEXT_META[k];
+      var count = FULL_TEXT_TOTALS[k] || TEXTS[k].verses.length;
       return '<button type="button" class="textcard' + (k === textKey ? " active" : "") + '" data-seltext="' + k + '" aria-pressed="' + (k === textKey) + '">' +
         '<span class="name">' + esc(state.lang === "hi" ? meta.nameHi : meta.name) + "</span>" +
-        '<span class="tag">' + esc(state.lang === "hi" ? meta.taglineHi : meta.taglineEn) + " · " + TEXTS[k].verses.length + " " + esc(tt.verses) + "</span></button>";
+        '<span class="tag">' + esc(state.lang === "hi" ? meta.taglineHi : meta.taglineEn) + " · " + count + " " + esc(tt.verses) + "</span></button>";
     }).join("") + "</div></section>" +
 
     '<section class="sectionblock" aria-label="' + esc(tt.chapters) + '"><h2>' + esc(state.lang === "hi" ? TEXT_META[textKey].nameHi : TEXT_META[textKey].name) + " · " + esc(tt.chapters) + '</h2>' +
@@ -1238,6 +1584,24 @@ function renderPlans() {
 function renderSaved() {
   var tt = t();
   var panel = el("panelView");
+  // A saved full-text verse only exists in VERSE_BY_KEY once its book
+  // has loaded this visit, so load any missing books, then render again.
+  var missing = [];
+  state.saves.forEach(function (k) {
+    if (VERSE_BY_KEY[k]) return;
+    var parts = String(k).split(":");
+    if (parts.length >= 2 && (parts[0] === "ramayana" || parts[0] === "mahabharata") && FULL_TEXT_META[parts[0]]) {
+      var known = false;
+      FULL_TEXT_META[parts[0]].forEach(function (b) { if (b.id === parts[1]) known = true; });
+      if (known && missing.indexOf(parts[0] + ":" + parts[1]) === -1) missing.push(parts[0] + ":" + parts[1]);
+    }
+  });
+  if (missing.length) {
+    Promise.all(missing.map(function (m) {
+      var p = m.split(":");
+      return loadFullSection(p[0], p[1]).catch(function () { return null; });
+    })).then(function () { if (screen === "saved") renderSaved(); });
+  }
   var savedVerses = state.saves.map(function (k) { return VERSE_BY_KEY[k]; }).filter(Boolean);
   panel.innerHTML = '<div class="screen"><h2 class="sronly">' + esc(tt.saved) + "</h2>" +
     (savedVerses.length === 0
@@ -1483,11 +1847,6 @@ var AUDIO_MODES = ["chant", "hindi", "english", "chant-hindi", "chant-english"];
 var SPEEDS = [0.8, 1, 1.2, 1.5];
 var audio = null;
 function modeIsPro(m) { return m !== "chant"; }
-function audioFileFor(verse, lang) {
-  if (verse.textKey !== "gita" || !verse.c) return null;
-  var name = "gita-" + verse.c + "-" + verse.v + "-" + lang;
-  return AUDIO_SET[name] ? "audio/gita/" + name + ".mp3" : null;
-}
 function hasServerAudio(verse) { return !!audioFileFor(verse, "sanskrit"); }
 function openAudio(verses, index) {
   stopAudioEngine();
@@ -1499,7 +1858,9 @@ function openAudio(verses, index) {
   audio.el = audio.engine;
   audio.engine.addEventListener("ended", onStepEnded);
   audio.engine.addEventListener("error", function () {
-    if (audio && audio.usingFile && audio.status !== "idle") { audio.status = "error"; audio.errorKind = "failed"; renderAudio(); }
+    if (!audio || !audio.usingFile || audio.status === "idle") return;
+    if (tryAudioFallback()) return;
+    audio.status = "error"; audio.errorKind = "failed"; renderAudio();
   });
   renderAudio();
 }
@@ -1647,7 +2008,7 @@ function buildQueue() {
   var q = [];
   langs.forEach(function (lang) {
     var file = audioFileFor(verse, lang);
-    if (file) { q.push({ type: "file", src: file }); return; }
+    if (file) { q.push({ type: "file", src: file, lang: lang }); return; }
     var text = lang === "sanskrit" ? cleanForSpeech(verse.sa)
       : lang === "hindi" ? cleanForSpeech(verse.hi || "")
       : cleanForSpeech(verse.en || "");
@@ -1673,10 +2034,26 @@ function togglePlay() {
   }
   playAudio();
 }
+function tryAudioFallback() {
+  // If the GCS file fails, retry the bundled local copy (Gita Chapter 1
+  // only). Returns true when a retry was started.
+  if (!audio || audio.fallbackTried) return false;
+  var local = audioLocalFallback(audioVerse(), audio.fileLang);
+  if (!local) return false;
+  audio.fallbackTried = true;
+  audio.el.src = local;
+  audio.el.playbackRate = audio.speed;
+  var p = audio.el.play();
+  if (p) p.catch(function () {
+    if (audio && audio.usingFile) { audio.status = "error"; audio.errorKind = "failed"; renderAudio(); }
+  });
+  return true;
+}
 function playAudio() {
   if (!audio) return;
   audio.queue = buildQueue();
   audio.qstep = 0;
+  audio.fallbackTried = false;
   if (!audio.queue.length) { audio.status = "error"; audio.errorKind = "failed"; renderAudio(); return; }
   audio.status = "loading";
   renderAudio();
@@ -1688,13 +2065,17 @@ function playStep() {
   if (!step) { onQueueDone(); return; }
   if (step.type === "file") {
     audio.usingTts = false; audio.usingFile = true;
+    audio.fileLang = step.lang;
+    audio.fallbackTried = false;
     audio.el.src = step.src;
     audio.el.playbackRate = audio.speed;
     audio.status = "playing";
     renderAudio();
     var p = audio.el.play();
     if (p) p.catch(function () {
-      if (audio && audio.usingFile) { audio.status = "error"; audio.errorKind = "failed"; renderAudio(); }
+      if (!audio || !audio.usingFile) return;
+      if (tryAudioFallback()) return;
+      audio.status = "error"; audio.errorKind = "failed"; renderAudio();
     });
   } else {
     if (!("speechSynthesis" in window)) { audio.status = "error"; audio.errorKind = "failed"; renderAudio(); return; }

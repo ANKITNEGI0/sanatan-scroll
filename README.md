@@ -17,7 +17,7 @@ everything to it, file by file:
 | `client/src/theme.css` (tokens, dark brown default #16110b, light palette, Tiro Devanagari Serif + Cormorant Garamond) | `styles.css` `:root` tokens and component classes |
 | `client/src/App.tsx` (single top bar: streak pill, EN/हिं segmented toggle, "Learn your tradition" tagline, sun/moon segmented toggle, Google sign-in or avatar chip, gold Pro pill, text chips on their own row below; left rail with nav + chapters; right rail with Verse of the Day, streak, Pro; mobile bottom nav with icons; onboarding) | `index.html` shell + `app.js` header, rails, nav, onboarding |
 | `client/src/lib/google.ts` + `client/src/lib/config.ts` (GIS OAuth token flow, pre-configured Client ID, account chooser, sign-in is free and never unlocks Pro, resume on the verse after the last one read) | `app.js` Google sign-in section, same Client ID, same flow |
-| `client/src/components/Feed.tsx` (unboxed centred verses on the page background, Sanskrit first, Hindi meaning then English meaning, tap pill, round icon buttons, Study solid accent, Listen solid gold, progress bar, counter) | `app.js` verse cards, no card box anywhere |
+| `client/src/components/Feed.tsx` (unboxed centred verses on the page background, selected language first in big type, then the other meaning, Sanskrit last, tap pill, round icon buttons, Study solid accent, Listen solid gold, progress bar, counter) | `app.js` verse cards, no card box anywhere |
 | `client/src/components/StudySheet.tsx` (bottom sheet, tabs: Explain Simply free, Deep Study Pro, Word by Word with Sivananda commentary, Related Verses Pro) | `app.js` study sheet |
 | `client/src/components/AudioSheet.tsx` (bottom sheet, mode pills, speed pills, big round play button, Play All gold button, voice card) | `app.js` audio sheet |
 | `client/src/components/Paywall.tsx` (centred modal, plan list, geo pricing with no currency switch, simulated checkout) | `app.js` paywall |
@@ -41,7 +41,7 @@ No em dashes are used anywhere in this project, by Ankit's rule.
 
 ## What is real here
 
-- The full verse text for all four texts, Sanskrit first, then Hindi meaning, then English last, on unboxed centred cards exactly as the space renders them.
+- The full verse text for all four texts, selected language first in big type, then the other meaning, Sanskrit last, on unboxed centred cards exactly as the space renders them.
 - Dark mode default in the space's dark brown (#16110b), light mode in its cream palette, sun and moon as a segmented toggle beside the EN/हिं toggle, theme stored on the device and applied before first paint. Every label takes its colour from the theme tokens, so text chips stay readable in dark mode.
 - Discover (Verse of the Day, Listen & Chant collections, mood collections, search across all four texts, text picker, chapter and section lists), all three reading plans from the space (Gita in 21 Days, Sankhya Yoga in 7 Days, 40 Days of Chalisa) with day progress, Saved, Profile with streak stats, text size and language.
 - Like, save, share (a real verse card image, drawn on a canvas in the space's colours), reading position per text, streak counted by IST calendar days. All kept in localStorage on this device.
