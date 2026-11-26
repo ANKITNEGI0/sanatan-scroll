@@ -202,6 +202,10 @@ input { font-family: inherit; }
 .meaning-label.upper { text-transform: uppercase; }
 .verse .hi-text { font-family: var(--font-deva); margin: 6px 0 0; font-size: 17.3px; line-height: 1.85; color: color-mix(in srgb, var(--text) 90%, transparent); }
 .verse .en-text { font-family: var(--font-verse); margin: 6px 0 0; font-size: 18.4px; line-height: 1.55; color: color-mix(in srgb, var(--text) 90%, transparent); }
+/* Language-first verse order: the selected language leads in big type, Sanskrit last and smaller. */
+.verse .primary-text { font-size: 24.8px; line-height: 1.6; color: var(--text); }
+.verse .sanskrit-last { margin-top: 20px; }
+.verse .sa-small { font-size: 19px; line-height: 1.8; margin: 6px 0 0; }
 .verse .missing { margin: 6px 0 0; font-size: 14px; color: var(--dim); }
 .tappill {
   margin: 24px 0 0; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px;

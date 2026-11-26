@@ -69,7 +69,7 @@ var STR = {
     searchPlaceholder: "Search a word or verse…", searchTitle: "Search the texts",
     noResults: "No verses found for that search.",
     savedEmpty: "Nothing saved yet. Tap the bookmark on any verse and it will wait for you here.",
-    meaning: "Meaning", hindiMeaning: "Hindi meaning", englishMeaning: "English meaning",
+    meaning: "Meaning", hindiMeaning: "Hindi meaning", englishMeaning: "English meaning", sanskritLabel: "Sanskrit",
     tapToUnderstand: "Tap to understand in easy language", exampleLabel: "A real-life example",
     meaningRetry: "Meaning didn't load, tap to retry", loadingMeaning: "Preparing the meaning…",
     study: "Study", explain: "Explain Simply", deepStudy: "Deep Study", wordByWord: "Word by Word",
@@ -145,7 +145,7 @@ var STR = {
     searchPlaceholder: "कोई शब्द या श्लोक खोजें…", searchTitle: "ग्रन्थों में खोजें",
     noResults: "इस खोज के लिए कोई श्लोक नहीं मिला।",
     savedEmpty: "अभी कुछ सहेजा नहीं है। किसी भी श्लोक पर बुकमार्क दबाएँ, वह यहाँ मिलेगा।",
-    meaning: "अर्थ", hindiMeaning: "हिन्दी अर्थ", englishMeaning: "अंग्रेज़ी अर्थ",
+    meaning: "अर्थ", hindiMeaning: "हिन्दी अर्थ", englishMeaning: "अंग्रेज़ी अर्थ", sanskritLabel: "संस्कृत",
     tapToUnderstand: "आसान भाषा में समझने के लिए दबाएँ", exampleLabel: "रोज़मर्रा का उदाहरण",
     meaningRetry: "अर्थ नहीं आया, फिर कोशिश के लिए दबाएँ", loadingMeaning: "अर्थ तैयार हो रहा है…",
     study: "अध्ययन", explain: "सरल अर्थ", deepStudy: "गहन अध्ययन", wordByWord: "शब्दार्थ",
@@ -931,14 +931,12 @@ function verseCardHtml(verse) {
   var tt = t();
   var liked = state.likes.indexOf(verse.key) !== -1;
   var saved = state.saves.indexOf(verse.key) !== -1;
-  var size = (1.55 * state.fontScale).toFixed(3);
   var html = '<article class="verse" data-key="' + esc(verse.key) + '" aria-label="' + esc(verse.ref) + '">' +
     '<div class="verse-inner">' +
     '<div class="verse-tap" role="button" tabindex="0" aria-label="' + esc(tt.tapToUnderstand) + ", " + esc(verse.ref) + '">' +
     '<p class="section' + (state.lang === "hi" ? "" : " tracked") + '">' + esc(state.lang === "hi" ? verse.sectionHi : verse.section) + "</p>" +
     (verse.speaker ? '<p class="speaker">' + esc(verse.speaker) + "</p>" : "") +
-    '<p class="sa" style="font-size:' + size + 'rem">' + esc(verse.sa) + "</p>" +
-    '<div class="meanings">' + meaningBlock("hi", verse) + meaningBlock("en", verse) + "</div>" +
+    '<div class="meanings">' + (state.lang === "hi" ? meaningBlock("hi", verse, true) + meaningBlock("en", verse, false) : meaningBlock("en", verse, true) + meaningBlock("hi", verse, false)) + sanskritBlock(verse) + "</div>" +
     '<p class="tappill">' + I.book + esc(tt.tapToUnderstand) + "</p>" +
     "</div>" +
     '<p class="ref">' + esc(verse.ref) + "</p>" +
@@ -953,8 +951,10 @@ function verseCardHtml(verse) {
     "</div></article>";
   return html;
 }
-function meaningBlock(which, verse) {
+function meaningBlock(which, verse, primary) {
   var tt = t();
+  var cls = primary ? " primary-text" : "";
+  var big = primary ? ' style="font-size:' + (1.55 * state.fontScale).toFixed(3) + 'rem"' : "";
   if (which === "hi") {
     if (!verse.hi) {
       if (verse.textKey === "ramayana" || verse.textKey === "mahabharata") {
@@ -962,7 +962,7 @@ function meaningBlock(which, verse) {
       }
       return "";
     }
-    return '<div><p class="meaning-label">' + esc(tt.hindiMeaning) + '</p><p class="hi-text">' + esc(verse.hi) + "</p></div>";
+    return '<div><p class="meaning-label">' + esc(tt.hindiMeaning) + '</p><p class="hi-text' + cls + '"' + big + '>' + esc(verse.hi) + "</p></div>";
   }
   if (!verse.en) {
     if (verse.textKey === "mahabharata") {
@@ -970,7 +970,12 @@ function meaningBlock(which, verse) {
     }
     return "";
   }
-  return '<div><p class="meaning-label upper">' + esc(tt.englishMeaning) + '</p><p class="en-text">' + esc(verse.en) + "</p></div>";
+  return '<div><p class="meaning-label upper">' + esc(tt.englishMeaning) + '</p><p class="en-text' + cls + '"' + big + '>' + esc(verse.en) + "</p></div>";
+}
+function sanskritBlock(verse) {
+  var tt = t();
+  if (!verse.sa) return "";
+  return '<div class="sanskrit-last"><p class="meaning-label">' + esc(tt.sanskritLabel) + '</p><p class="sa sa-small">' + esc(verse.sa) + "</p></div>";
 }
 function renderSpecBar() {
   var bar = el("specBar");
@@ -1537,7 +1542,7 @@ function renderAudio() {
       '<div class="modegroup"><p class="grouplabel">' + esc(tt.speed) + '</p><div class="pills" role="group" aria-label="' + esc(tt.speed) + '">' +
       SPEEDS.map(function (s) {
         return '<button type="button" class="modepill' + (audio.speed === s ? " active" : "") + '" data-speed="' + s + '" aria-pressed="' + (audio.speed === s) + '">' +
-          esc(s === 0.8 ? tt.slow : s === 1 ? tt.normalSpeed : "1.2×") + "</button>";
+          esc(s === 0.8 ? tt.slow : s === 1 ? tt.normalSpeed : s === 1.5 ? "1.5×" : "1.2×") + "</button>";
       }).join("") + "</div></div>" +
       '<div class="transport">' +
       '<button type="button" class="side" data-prev="1" aria-label="' + esc(tt.prevVerse) + '"' + (audio.idx <= 0 ? " disabled" : "") + ">" + I.skipBack + "</button>" +
