@@ -3,42 +3,73 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Sanatan Scroll, a verse feed for the Gita, Ramayana, Mahabharata and Hanuman Chalisa. Read and listen in your browser, no app to install. Preview build.">
+<meta name="description" content="Sanatan Scroll, a verse feed for the Gita, Ramayana, Mahabharata and Hanuman Chalisa. Read and listen in your browser, no app to install.">
 <title>Sanatan Scroll</title>
+<script>
+/* Apply the stored theme before first paint, dark brown is the default.
+   Mirrors client/src/lib/theme.ts in the space. */
+try {
+  if (localStorage.getItem("sanatan-scroll-theme") === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+  }
+} catch (e) { /* storage unavailable, dark stays */ }
+</script>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">Sanatan <span>Scroll</span></div>
-  <div class="spacer"></div>
-  <button class="pillbtn themebtn" id="themeBtn" type="button" aria-label="Switch dark or light mode">🌙 Dark</button>
-  <button class="pillbtn" id="langBtn" type="button">EN / हिंदी</button>
-  <button class="probtn" id="proBtn" type="button">Go Pro</button>
-</header>
+<div class="shell">
 
-<nav class="textbar" id="textBar" aria-label="Choose a text"></nav>
+  <!-- Top bar, ported from App.tsx: text switcher, streak, language and
+       theme segmented toggles, Pro. One header only, no brand bar. -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <nav class="textnav no-scrollbar" id="textBar" aria-label="Texts"></nav>
+      <span class="streakpill" id="streakPill" aria-label="Day streak"></span>
+      <div class="segmented" role="group" aria-label="Language" id="langToggle">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="hi" aria-pressed="false">हिं</button>
+      </div>
+      <div class="segmented" role="group" aria-label="Appearance" id="themeToggle">
+        <button type="button" data-theme-choice="light" aria-label="Light mode" aria-pressed="false"></button>
+        <button type="button" data-theme-choice="dark" aria-label="Dark mode" aria-pressed="true"></button>
+      </div>
+      <button type="button" class="propill" id="proBtn"></button>
+    </div>
+  </header>
 
-<div class="layout">
-  <main class="feedcol">
-    <div id="playerSlot" class="player hidden"></div>
-    <section id="feedView">
-      <p class="taphint">Tap a verse to see its detailed view</p>
-      <div class="feed" id="feed" aria-label="Verse feed"></div>
-      <div class="progressline" id="progressLine"></div>
-    </section>
-    <section id="panelView" class="panel hidden"></section>
-  </main>
-  <aside class="rail" id="rail" aria-label="Chapters and sections"></aside>
+  <div class="bodyrow">
+    <!-- Desktop left rail: main nav + chapters of the current text -->
+    <aside class="siderail" aria-label="Main">
+      <nav class="railnav" id="railNav"></nav>
+      <div class="railscroll railchapters">
+        <p class="railhead" id="railHead"></p>
+        <ul class="raillist" id="railList"></ul>
+      </div>
+    </aside>
+
+    <!-- Main column -->
+    <main class="maincol">
+      <section id="feedView" class="feedview">
+        <div id="specBar" class="specbar hidden"></div>
+        <div class="feedwrap">
+          <div class="progressbar"><div class="progressbar-fill" id="progressFill"></div></div>
+          <div class="feed feed-scroll" id="feed" role="feed" aria-label="Verses"></div>
+          <p class="feedcounter" id="feedCounter"></p>
+        </div>
+      </section>
+      <section id="panelView" class="panelview rail-scroll hidden"></section>
+    </main>
+
+    <!-- Desktop right rail: verse of the day, streak, Pro -->
+    <aside class="rightrail rail-scroll" id="rightRail"></aside>
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <nav class="bottomnav" id="bottomNav" aria-label="Main"></nav>
 </div>
 
-<nav class="bottomnav" id="bottomNav">
-  <button type="button" data-view="feed" class="active"><span class="navicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><span class="navlabel">Scroll</span></button>
-  <button type="button" data-view="discover"><span class="navicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span><span class="navlabel">Discover</span></button>
-  <button type="button" data-view="plans"><span class="navicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg></span><span class="navlabel">Plans</span></button>
-  <button type="button" data-view="saved"><span class="navicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span><span class="navlabel">Saved</span></button>
-  <button type="button" data-view="profile"><span class="navicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="navlabel">Profile</span></button>
-</nav>
-
+<div class="toast hidden" id="toast" role="status"><p id="toastText"></p></div>
+<div id="sheetSlot"></div>
 <div id="modalSlot"></div>
 
 <script src="app.js"></script>

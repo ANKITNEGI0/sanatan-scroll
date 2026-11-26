@@ -1,10 +1,27 @@
-# Sanatan Scroll, Vercel preview
+# Sanatan Scroll, live site
 
-A standalone copy of Sanatan Scroll that deploys to Vercel on the free Hobby
-plan, on a free `.vercel.app` address. It is a preview, not the launch build.
-It shows the real verse text and plays real server audio for Gita Chapter 1,
-so Ankit can open it on his phone and see how the site looks and feels in a
-real browser, outside Muse.
+The live website for Sanatan Scroll, deployed to Vercel at
+https://sanatan-scroll.vercel.app/ from the GitHub repo
+ANKITNEGI0/sanatan-scroll. Pushes to `main` auto deploy.
+
+## The UI is a port of the space's actual code, not a recreation
+
+The Sanatan Scroll space inside Muse is a full app with a server part
+(React client, server actions, a database), so it cannot be published as
+a static page and Vercel cannot run it as is. On 26 Nov 2026 the live
+site was rebuilt by pulling the space's actual UI code and matching
+everything to it, file by file:
+
+| Space source (source of truth) | This site |
+| --- | --- |
+| `client/src/theme.css` (tokens, dark brown default #16110b, light palette, Tiro Devanagari Serif + Cormorant Garamond) | `styles.css` `:root` tokens and component classes |
+| `client/src/App.tsx` (single top bar with text chips, streak pill, EN/हिं segmented toggle, sun/moon segmented toggle, gold Pro pill; left rail with nav + chapters; right rail with Verse of the Day, streak, Pro; mobile bottom nav with icons; onboarding) | `index.html` shell + `app.js` header, rails, nav, onboarding |
+| `client/src/components/Feed.tsx` (unboxed centred verses on the page background, Sanskrit first, Hindi meaning then English meaning, tap pill, round icon buttons, Study solid accent, Listen solid gold, progress bar, counter) | `app.js` verse cards, no card box anywhere |
+| `client/src/components/StudySheet.tsx` (bottom sheet, tabs: Explain Simply free, Deep Study Pro, Word by Word with Sivananda commentary, Related Verses Pro) | `app.js` study sheet |
+| `client/src/components/AudioSheet.tsx` (bottom sheet, mode pills, speed pills, big round play button, Play All gold button, voice card) | `app.js` audio sheet |
+| `client/src/components/Paywall.tsx` (centred modal, plan list, geo pricing with no currency switch, simulated checkout) | `app.js` paywall |
+| `client/src/components/screens.tsx` (Discover with Verse of the Day, Listen & Chant, moods, search, texts, sections; Plans; Saved; Profile) | `app.js` screens |
+| `client/src/lib/i18n.ts` (every UI string, English and Hindi) | `app.js` string tables, copied verbatim |
 
 No em dashes are used anywhere in this project, by Ankit's rule.
 
@@ -12,133 +29,46 @@ No em dashes are used anywhere in this project, by Ankit's rule.
 
 | File | What it is |
 | --- | --- |
-| `index.html`, `styles.css`, `app.js` | The whole preview app. Plain HTML, CSS and JavaScript, no framework, no build step, no server. |
-| `data/corpus.json` | The real bundled text, 1,231 verses. Gita 701, Ramayana 332, Mahabharata 155, Hanuman Chalisa 43. Built by `tools/build-corpus.py` from the Muse app source. |
-| `audio/gita/` | Preview audio only, 144 MP3s, 9.4 MB. All of Gita Chapter 1 in Sanskrit, Hindi and English, plus Gita 2.47. Same finalized voices as the Muse app: Sanskrit Chirp 3 HD Charon, Hindi Neural2-B, English Neural2-D. |
+| `index.html`, `styles.css`, `app.js` | The whole site. Plain HTML, CSS and JavaScript, no framework, no build step, no server. |
+| `data/corpus.json` | The real bundled text, 1,231 verses. Gita 701, Ramayana 332, Mahabharata 155, Hanuman Chalisa 43. Built by `tools/build-corpus.py` from the space source; Gita chapter Hindi meanings and summaries merged from the space's `gita.json`. |
+| `data/gita-comm.json` | Swami Sivananda's public domain Gita commentary, copied from the space, used in the study sheet's Word by Word tab. |
+| `audio/gita/` | Recorded audio, 144 MP3s, 9.4 MB. All of Gita Chapter 1 in Sanskrit, Hindi and English. Same finalized voices as the space: Sanskrit Chirp 3 HD Charon, Hindi Neural2-B, English Neural2-D. |
 | `vercel.json` | Static site config and cache headers for the audio files. |
-| `tools/build-corpus.py` | Regenerates `data/corpus.json` from the Muse app source. Read only, it never writes to the Muse artifact. |
+| `tools/build-corpus.py` | Regenerates `data/corpus.json` from the space source. Read only, it never writes to the space. |
 
-## What is real in this preview
+## What is real here
 
-- The full verse text for all four texts, Sanskrit first, then Hindi meaning, then English last, exactly as Ankit set the card order.
-- Verse of the Day, search across all four texts, chapter and section lists, the 21 day Gita plan, like and save, share, tap to understand, word by word for Gita.
-- Dark mode is the default, with the brown background from the space, and a sun/moon toggle beside the EN/Hindi toggle. Chapters and side panels scroll inside themselves. Like, Save, Share, Study and Listen are icon buttons, with a tap for detailed view hint, and the bottom nav has icons. The Pro popup is a centred modal, not a bottom sheet.
-- The Pro paywall with Ankit's geo pricing: India Rs 29 for a day, Rs 99 for a month, Rs 599 for a year; outside India $2 a day, $9 a month, $59 a year. Location is detected automatically from the device, there is no INR/USD toggle at all. The 7 day free trial is on the yearly plan only.
-- The Listen player with a real audio element, speed control, previous and next, and Play All for a chapter. Sanskrit chant is free, Hindi and English narration and Play All are Pro, same boundary as the live app.
-- Streak and verses read, counted from the days you read in this browser.
+- The full verse text for all four texts, Sanskrit first, then Hindi meaning, then English last, on unboxed centred cards exactly as the space renders them.
+- Dark mode default in the space's dark brown (#16110b), light mode in its cream palette, sun and moon as a segmented toggle beside the EN/हिं toggle, theme stored on the device and applied before first paint. Every label takes its colour from the theme tokens, so text chips stay readable in dark mode.
+- Discover (Verse of the Day, Listen & Chant collections, mood collections, search across all four texts, text picker, chapter and section lists), all three reading plans from the space (Gita in 21 Days, Sankhya Yoga in 7 Days, 40 Days of Chalisa) with day progress, Saved, Profile with streak stats, text size and language.
+- Like, save, share (a real verse card image, drawn on a canvas in the space's colours), reading position per text, streak counted by IST calendar days. All kept in localStorage on this device.
+- The study sheet with the space's four tabs. Word by Word shows the real bundled word meanings and the real Sivananda commentary for Gita verses.
+- The Listen sheet with the space's five modes and speed control. Gita Chapter 1 plays the real recorded voices; Play All steps through a list hands free. Sanskrit chant is free, narration modes and Play All are Pro, the same boundary as the space.
+- The Pro paywall, centred, with Ankit's geo pricing: India ₹29 a day, ₹99 a month, ₹599 a year; outside India $2 a day, $9 a month, $59 a year. Location is detected automatically, there is no currency switch. The 7 day free trial is on the yearly plan only.
 
-## What is stubbed, honestly
+## What differs from the space, honestly
 
-- **Pro checkout is simulated.** Tapping Buy or Start trial turns Pro on in this browser only. No payment is taken, no card is asked for, nothing is charged. There is no Razorpay link and no payment link anywhere in this project. Real checkout is a launch decision, see below.
-- **Signed out by default.** The app starts as a preview reader, with a Sign in with Google button on Profile and in the Pro popup. Google sign in is not connected yet, no OAuth Client ID has been supplied, so the button honestly says so and does not fake a login. When signed in, Profile shows a plain Sign Out button. Likes, saves, streak and Pro are kept in this browser only, in localStorage. If you open it on another phone, your streak starts again. For launch, sign in needs to be connected first.
-- **Audio is Chapter 1 only.** The full Gita audio is 2,097 MP3s, 154 MB. That does not fit a free Vercel deploy, see the audio section below. Verses outside Chapter 1 and Gita 2.47 show a clear note instead of a broken player.
-- **Study content is bundled text only.** Deep Study and Related Verses are Pro locked, as in the live app. In this preview, Pro unlock shows the word by word meanings. Full Deep Study generation needs the server, it is not faked here.
-- **Hindi and English meanings have gaps.** Gita has Hindi for all 701 verses. Ramayana has Sanskrit and English only. Mahabharata has Sanskrit and transliteration only, no English or Hindi meaning bundled. The cards say so plainly where a meaning is missing, instead of inventing one.
+- **No server.** The space keeps saves, likes, streak, plans and Pro on the reader's account, server side. Here they live in this browser's localStorage only. Open the site on another phone and the streak starts again.
+- **Study explanations are composed on device.** The space generates Explain Simply and Deep Study once per verse with AI and caches them on its server. There is no server here, so those tabs are composed on device from the verse's own bundled translation and word meanings, and the sheet says so. Related Verses lists verses from the same text in the space's neighbour and spread pattern, without the AI written reasons.
+- **Audio beyond Chapter 1 uses the device voice.** The full Gita audio is 2,097 MP3s, about 154 MB, too large for this deploy. Verses outside Chapter 1, and the other texts, are read by the device's own text to speech with the deepest male voice it finds, pitched lower, which is exactly what the space itself does for the Ramayana, Mahabharata and Chalisa. The voice card in the player says which voice is speaking.
+- **Pro checkout is simulated.** Choosing a plan turns Pro on in this browser only. No payment is taken, no card is asked for. Real checkout needs Ankit's Razorpay account, bank and PAN.
+- **Google sign in is not connected.** The button renders disabled with the space's own not connected note, it does not fake a login. It needs a Google OAuth Client ID, which has not been supplied.
+- **Meanings have the same gaps as the source.** Ramayana verses have no bundled Hindi meaning, Mahabharata verses have no bundled English or Hindi meaning. The cards show the space's preparing the meaning line there instead of inventing one.
 
-## The audio size problem, and the decision
+## Deploy
 
-- Full Gita audio: 2,097 files, 154 MB, about 73 KB per file.
-- Vercel Hobby: the CLI upload is capped at 100 MB, and a 154 MB audio folder alone breaks that. Individual files are fine, the total is the problem. Hobby also allows 10 GB of deployment storage, but a 154 MB deploy on every change is slow and fragile.
-- So this preview bundles only Gita Chapter 1 (141 files, 9.3 MB) plus Gita 2.47 (3 files). Total deploy is about 11 MB, well inside the limit, and it is enough to hear all three voices and test the player.
-- For the full launch, host the audio outside the Vercel deploy. Good options, in order: a public object store such as Cloudflare R2 or Amazon S3, served over a CDN, with the app loading each MP3 on demand by URL; or a paid Vercel plan with the audio in Blob storage. Do not copy all 2,097 files into this folder. When the Ramayana and Mahabharata audio is finished, the same rule applies, those files are also large.
-
-## How to deploy, free `.vercel.app` domain, with auto deploy
-
-Use Ankit's existing Vercel account, the one under ankitnegi4128@gmail.com.
-Do not create a new account. Vercel lets you sign in with Google, so sign in
-with that Google account.
-
-The project is set up the proper way, connected to GitHub, so every change
-lands on the live site automatically. This folder is already a Git repo with
-one commit. No GitHub repo exists yet, and nothing has been deployed yet.
-
-### Auto deploy flow
-
-1. A change is made to Sanatan Scroll and committed to this folder.
-2. The commit is pushed to the `main` branch of the GitHub repo.
-3. Vercel sees the push and deploys it by itself. No manual redeploy, no CLI
-   command, no button to press.
-4. The live site at `sanatan-scroll.vercel.app` updates a couple of minutes
-   later.
-5. A push to any other branch, or a pull request, gets its own preview link
-   instead, so unfinished work never touches the live site.
-
-That is the whole point of the GitHub connection. Once it is set up, Ankit
-never has to redeploy by hand.
-
-### What Ankit needs to do once
-
-Step 1, make the GitHub repo. On GitHub, signed in with the account linked
-to ankitnegi4128@gmail.com, create a new empty repo called `sanatan-scroll`.
-Do not add a README or a license in GitHub, the folder already has them.
-
-Step 2, push this folder to it, from a terminal in this folder:
-
-```bash
-git remote add origin https://github.com/<your-github-username>/sanatan-scroll.git
-git push -u origin main
-```
-
-Replace `<your-github-username>` with Ankit's GitHub username. If GitHub asks
-for sign in, use the account linked to ankitnegi4128@gmail.com.
-
-Step 3, connect it in Vercel. In the Vercel dashboard, Add New, Project,
-Import the `sanatan-scroll` repo. If Vercel asks to install the GitHub app,
-accept it, that is what lets Vercel see pushes. Framework preset: Other.
-Build command: leave empty, this is a static site with no build step. Output
-directory: leave as the project root. Deploy.
-
-Step 4, check the address. Vercel gives a free address from the project
-name, for example `sanatan-scroll.vercel.app`. If the name is taken, Vercel
-suggests another. That address is the live site, public to anyone with the
-link, no install needed.
-
-From then on, every push to `main` auto deploys. To change something on the
-site, change the files, commit, and push. That is all.
-
-### If GitHub is not wanted
-
-Fallback, Vercel CLI, no Git needed, but no auto deploy either. Every change
-then needs a manual redeploy:
-
-1. Install Node.js, then install the CLI once: `npm install -g vercel`
-2. In this folder, run: `vercel`
-3. Sign in with Google using ankitnegi4128@gmail.com.
-4. Project name: `sanatan-scroll`. Vercel gives the free `.vercel.app`
-   address from that name.
-5. Every later change: run `vercel --prod` from this folder to update it.
-
-The GitHub way above is the recommended one, because Ankit asked that
-changes reflect automatically.
-
-## What still needs Ankit's decision before a real launch
-
-1. **Database.** On Vercel there is no built in SQLite file like the Muse app
-   has. Likes, saves, streak, plans and Pro need a hosted database, for
-   example Vercel Postgres, Supabase, or Neon. Until then, everything is
-   per browser only.
-2. **Sign in.** Google sign in on Vercel is real and possible, unlike in the
-   Muse app. It needs a Google OAuth client and a small auth layer, for
-   example Auth.js or Firebase Auth. Until then, Pro cannot be tied to a
-   person, and a user who pays on one phone would lose Pro on another.
-3. **Payments.** Razorpay for India, plus the store or card checkout outside
-   India. Razorpay setup is free, about 2 percent per payment, and it needs
-   Ankit's Razorpay account, bank and PAN. Nothing is linked in this preview.
-4. **Audio hosting.** Pick the object store for the full 154 MB of Gita audio,
-   plus Ramayana and Mahabharata audio when it is ready. See the audio section
-   above.
-5. **Plan.** Vercel Hobby is for personal, non commercial use. Sanatan Scroll
-   with paid Pro is a commercial product, so a real launch likely needs
-   Vercel Pro, about $20 a month, or another host. The Hobby preview for
-   Ankit to look at is fine, but do not launch the paid product on Hobby.
+The repo is connected to Vercel, pushes to `main` auto deploy, and the
+live site updates a couple of minutes later. To change the site, change
+the files, commit, and push. Nothing else.
 
 ## Regenerating the text
 
-If the Muse app text changes, rerun:
+If the space's text changes, rerun:
 
 ```bash
 python3 tools/build-corpus.py
 ```
 
-That reads the Muse artifact source and the audio corpus, and rewrites
-`data/corpus.json`. It never edits the Muse artifact.
+That reads the space source and rewrites `data/corpus.json`. It never
+edits the space. The Gita chapter Hindi meanings and summaries, and
+`data/gita-comm.json`, are copied from the space's data files.
