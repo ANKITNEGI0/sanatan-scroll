@@ -802,13 +802,20 @@ function openFullChapterPicker(collection, section) {
         var ch = null;
         built.chapters.forEach(function (c) { if (c.n === n) ch = c; });
         closeSheets();
-        startFullFeed(collection, section, ch ? ch.startIndex : 0);
+        startFullFeed(collection, section, ch ? ch.startIndex : 0)
+          .catch(function () { showNotice(tt.fullTextFailed); });
       });
     });
     var rb = slot.querySelector("[data-resume]");
-    if (rb) rb.addEventListener("click", function () { closeSheets(); startFullFeed(collection, section); });
+    if (rb) rb.addEventListener("click", function () {
+      closeSheets();
+      startFullFeed(collection, section).catch(function () { showNotice(tt.fullTextFailed); });
+    });
     var sb = slot.querySelector("[data-start]");
-    if (sb) sb.addEventListener("click", function () { closeSheets(); startFullFeed(collection, section, 0); });
+    if (sb) sb.addEventListener("click", function () {
+      closeSheets();
+      startFullFeed(collection, section, 0).catch(function () { showNotice(tt.fullTextFailed); });
+    });
   }).catch(function () {
     slot.querySelector(".sheet-body").innerHTML = '<p class="loadmsg">' + esc(tt.fullTextFailed) + '</p>';
   });
@@ -1174,11 +1181,38 @@ function renderAllChrome() { renderHeader(); renderNavs(); renderSpecBar(); }
 /* ---------- Feed (Feed.tsx + VerseCard) ---------- */
 var WINDOW = 2;
 function currentFeedList() { return feedList; }
+/* Verse index a programmatic jump (a tapped chapter in the book
+   picker, Resume, a saved verse) is landing on. While a jump is in
+   flight, the scroll observer's first delivery for a freshly rendered
+   feed can still describe the scroll position from BEFORE the jump;
+   acting on it dragged the feed back to that stale verse (usually
+   verse 1) and recorded it as the reading position, so a tapped
+   chapter silently never loaded, while "Start from the beginning"
+   (index 0, the same as the stale position) appeared to work. The
+   guard ignores those stale deliveries until the target verse itself
+   is observed; it also clears when the reader scrolls by hand, or
+   after a short timeout as a safety net. */
+var jumpTarget = -1;
+var jumpGuardTimer = null;
+function armJumpGuard(idx) {
+  jumpTarget = idx;
+  if (jumpGuardTimer) clearTimeout(jumpGuardTimer);
+  jumpGuardTimer = setTimeout(function () { jumpTarget = -1; jumpGuardTimer = null; }, 1500);
+}
+function clearJumpGuard() {
+  jumpTarget = -1;
+  if (jumpGuardTimer) { clearTimeout(jumpGuardTimer); jumpGuardTimer = null; }
+}
 function startFeed(list, initialIndex) {
   feedList = list;
   activeIdx = Math.max(0, Math.min(initialIndex || 0, list.length - 1));
+  armJumpGuard(activeIdx);
   renderFeed();
   var feed = el("feed");
+  // Land on the target verse right away, not only in the animation
+  // frame, so the scroll position already matches the target when the
+  // observer makes its first delivery for the new feed.
+  feed.scrollTo({ top: activeIdx * feed.clientHeight, behavior: "instant" });
   requestAnimationFrame(function () {
     feed.scrollTo({ top: activeIdx * feed.clientHeight, behavior: "instant" });
   });
@@ -1242,6 +1276,10 @@ function observeCards(feed) {
       if (!e.isIntersecting) return;
       var idx = Number(e.target.getAttribute("data-index"));
       if (isNaN(idx)) return;
+      // A delivery for any other verse while a jump is landing is the
+      // stale pre-jump position reporting in late; ignore it.
+      if (jumpTarget >= 0 && idx !== jumpTarget) return;
+      if (idx === jumpTarget) clearJumpGuard();
       if (idx !== activeIdx) {
         activeIdx = idx;
         renderFeedWindow();
@@ -2254,6 +2292,10 @@ function init() {
     b.addEventListener("click", function () { setTheme(b.getAttribute("data-theme-choice")); });
   });
   el("proBtn").addEventListener("click", openPaywall);
+  // A reader grabbing the feed mid-jump takes over from the jump
+  // guard, so normal scroll tracking resumes at once.
+  el("feed").addEventListener("touchstart", clearJumpGuard, { passive: true });
+  el("feed").addEventListener("wheel", clearJumpGuard, { passive: true });
   el("feed").addEventListener("keydown", function (e) {
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
     e.preventDefault();
