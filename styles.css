@@ -1,4 +1,4 @@
-/* Sanatan Scroll, live site.
+/* ScrollVerse, live site.
    Ported from the space's actual UI code (client/src/theme.css and the
    components under client/src/components/). Same tokens, same layout,
    same components. Dark brown is the default; the light palette applies
@@ -63,9 +63,8 @@ input { font-family: inherit; }
   padding-top: env(safe-area-inset-top);
 }
 .topbar-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; }
-@media (min-width: 640px) { .topbar-inner { padding: 8px 16px; flex-wrap: nowrap; } }
-.textnav { order: 1; display: flex; width: 100%; align-items: center; gap: 6px; overflow-x: auto; }
-@media (min-width: 640px) { .textnav { width: auto; flex: 1; } }
+@media (min-width: 640px) { .topbar-inner { padding: 8px 16px; } }
+.textnav { order: 2; display: flex; width: 100%; align-items: center; gap: 6px; overflow-x: auto; }
 .textchip {
   flex: 0 0 auto; border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 500;
   background: var(--surface); color: var(--text);
@@ -74,12 +73,39 @@ input { font-family: inherit; }
 }
 .textchip.active { background: var(--accent); color: #fff; box-shadow: none; }
 .streakpill {
-  margin-left: auto; display: flex; flex: 0 0 auto; align-items: center; gap: 4px;
+  order: 1; display: flex; flex: 0 0 auto; align-items: center; gap: 4px;
   border-radius: 999px; background: var(--surface); padding: 6px 10px;
   font-size: 14px; font-weight: 600; box-shadow: inset 0 0 0 1px var(--border);
 }
-@media (min-width: 640px) { .streakpill { margin-left: 0; } }
 .streakpill svg { width: 16px; height: 16px; color: var(--gold); }
+.tagline {
+  order: 1; display: none; min-width: 0; flex: 1; margin: 0;
+  text-align: center; font-size: 1.1rem; font-style: italic; color: var(--dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+@media (min-width: 560px) { .tagline { display: block; } }
+#langToggle { order: 1; }
+.themetoggle { order: 1; margin-left: auto; }
+@media (min-width: 560px) { .themetoggle { margin-left: 0; } }
+.authslot { order: 1; display: flex; flex: 0 0 auto; }
+.signinbtn {
+  display: flex; align-items: center; gap: 6px; border-radius: 999px; background: #fff;
+  padding: 6px 12px; font-size: 14px; font-weight: 600; color: #1f1f1f;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.signinbtn svg { width: 16px; height: 16px; }
+.signinbtn:disabled { opacity: 0.6; }
+.userchip {
+  display: flex; align-items: center; gap: 8px; border-radius: 999px; background: var(--surface);
+  padding: 4px 12px 4px 4px; box-shadow: inset 0 0 0 1px var(--border); color: var(--text);
+}
+.userchip img { width: 28px; height: 28px; border-radius: 999px; }
+.userchip .initial {
+  display: flex; width: 28px; height: 28px; align-items: center; justify-content: center;
+  border-radius: 999px; background: var(--accent-soft); color: var(--accent);
+  font-size: 12px; font-weight: 600;
+}
+.userchip .uname { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 500; }
 .segmented { display: flex; flex: 0 0 auto; overflow: hidden; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--border); }
 .segmented button {
   padding: 6px 12px; font-size: 14px; font-weight: 600; background: var(--surface); color: var(--text);
@@ -88,7 +114,7 @@ input { font-family: inherit; }
 .segmented button svg { width: 16px; height: 16px; }
 .segmented button.active { background: var(--accent); color: #fff; }
 .propill {
-  display: flex; flex: 0 0 auto; align-items: center; gap: 4px; border-radius: 999px;
+  order: 1; display: flex; flex: 0 0 auto; align-items: center; gap: 4px; border-radius: 999px;
   background: var(--gold); padding: 6px 12px; font-size: 14px; font-weight: 600; color: #fff;
 }
 .propill svg { width: 16px; height: 16px; }
@@ -373,9 +399,12 @@ input { font-family: inherit; }
 .profilecard .signout { margin-top: 16px; }
 .googlebtn {
   display: flex; min-height: 44px; align-items: center; gap: 12px; border-radius: 999px; background: #fff;
-  padding: 10px 20px; font-weight: 500; color: #1f1f1f; opacity: 0.6; box-shadow: inset 0 0 0 1px var(--border);
+  padding: 10px 20px; font-weight: 500; color: #1f1f1f; box-shadow: inset 0 0 0 1px var(--border);
 }
+.googlebtn:disabled { opacity: 0.6; }
 .googlebtn svg { width: 20px; height: 20px; }
+.avatarimg { width: 40px; height: 40px; flex: 0 0 auto; border-radius: 999px; }
+.signedinline { margin-top: 16px; text-align: center; font-size: 14px; color: var(--dim); }
 .fontrow, .langrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .langrow { margin-top: 16px; }
 .fontrow .lab, .langrow .lab { font-weight: 500; margin: 0; }
@@ -572,3 +601,10 @@ input { font-family: inherit; }
 
 .sronly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .loadmsg { padding: 40px 20px; text-align: center; color: var(--dim); font-size: 14px; }
+
+/* Legal links at the bottom of Profile (Privacy Policy, Terms, Refund) */
+.legalcard { padding-top: 8px; padding-bottom: 8px; }
+.legallist { list-style: none; margin: 0; padding: 0; }
+.legallist li + li { border-top: 1px solid var(--border); }
+.legallist a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 12px 0; font-weight: 500; color: var(--text); text-decoration: none; }
+.legallist .chev { color: var(--dim); font-size: 20px; line-height: 1; }

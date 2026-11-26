@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Sanatan Scroll, a verse feed for the Gita, Ramayana, Mahabharata and Hanuman Chalisa. Read and listen in your browser, no app to install.">
-<title>Sanatan Scroll</title>
+<meta name="description" content="ScrollVerse, a verse feed for the Gita, Ramayana, Mahabharata and Hanuman Chalisa. Read and listen in your browser, no app to install.">
+<title>ScrollVerse</title>
 <script>
 /* Apply the stored theme before first paint, dark brown is the default.
    Mirrors client/src/lib/theme.ts in the space. */
@@ -19,8 +19,10 @@ try {
 <body>
 <div class="shell">
 
-  <!-- Top bar, ported from App.tsx: text switcher, streak, language and
-       theme segmented toggles, Pro. One header only, no brand bar. -->
+  <!-- Top bar, ported from App.tsx: streak and language on the left,
+       tagline in the middle, theme, sign-in and Pro on the right, and
+       the text switcher on its own row below. One header only, no
+       brand bar. -->
   <header class="topbar">
     <div class="topbar-inner">
       <nav class="textnav no-scrollbar" id="textBar" aria-label="Texts"></nav>
@@ -29,10 +31,12 @@ try {
         <button type="button" data-lang="en" aria-pressed="true">EN</button>
         <button type="button" data-lang="hi" aria-pressed="false">हिं</button>
       </div>
-      <div class="segmented" role="group" aria-label="Appearance" id="themeToggle">
+      <p class="tagline font-verse" id="taglineEl"></p>
+      <div class="segmented themetoggle" role="group" aria-label="Appearance" id="themeToggle">
         <button type="button" data-theme-choice="light" aria-label="Light mode" aria-pressed="false"></button>
         <button type="button" data-theme-choice="dark" aria-label="Dark mode" aria-pressed="true"></button>
       </div>
+      <span id="authSlot" class="authslot"></span>
       <button type="button" class="propill" id="proBtn"></button>
     </div>
   </header>

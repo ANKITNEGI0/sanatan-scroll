@@ -1,10 +1,10 @@
-/* Sanatan Scroll, live site.
+/* ScrollVerse, live site.
    A direct port of the space's actual UI code: the React app in
    ~/workspace/ts-spaces/sanatan-scroll/client/src (App.tsx, Feed.tsx,
    StudySheet.tsx, AudioSheet.tsx, Paywall.tsx, screens.tsx, i18n.ts,
-   theme.css), rebuilt in plain JavaScript because the space is a full
-   app with a server part and cannot be published as a static page.
-   Same tokens, same layout, same components, same strings.
+   theme.css, lib/google.ts), rebuilt in plain JavaScript because the
+   space is a full app with a server part and cannot be published as a
+   static page. Same tokens, same layout, same components, same strings.
    Verse text is real and bundled in data/corpus.json; the Sivananda
    commentary is data/gita-comm.json, copied from the space.
    Saves, likes, streak, plan progress and Pro live in localStorage on
@@ -12,6 +12,10 @@
    account). Study explanations are composed on device from the bundled
    meanings and word meanings, the space generates them once per verse
    with AI and caches them on its server.
+   Google sign-in is the space's real GIS OAuth token flow with the
+   app's pre-configured Client ID (lib/config.ts in the space): tapping
+   Sign in opens Google's own account chooser, and signing in unlocks
+   Pro and resumes each text on the verse after the last one read.
    Audio: Gita Chapter 1 in all three recorded voices, as in the space.
    No em dashes are used anywhere in this file, by Ankit's rule. */
 
@@ -78,11 +82,16 @@ var STR = {
     appearance: "Appearance", darkMode: "Dark mode", lightMode: "Light mode", account: "Account",
     notSignedIn: "Not signed in", previewReader: "Preview reader", signInWithGoogle: "Sign in with Google",
     signedInWithGoogle: "Signed in with Google", signOut: "Sign Out",
-    googleNotConnected: "Google sign-in is not connected yet. It switches on at launch, and from then your streak, saved verses and Pro stay tied to your Google account.",
     googleTiedNote: "Your streak, saved verses, likes, plan progress and Pro are tied to this Google account, on your phone and desktop alike.",
     proTiedGoogle: "Pro will be tied to your Google account once you are signed in.",
+    proTiedSignedIn: "Pro will be tied to your Google account",
+    signIn: "Sign in",
+    tagline: "Learn your tradition",
+    proViaGoogle: "Unlocked with your Google sign-in",
+    signInFailed: "Google sign-in did not complete. Please try again.",
+    legal: "Legal", privacyPolicy: "Privacy Policy", termsConditions: "Terms and Conditions", refundPolicy: "Refund Policy",
     about: "About & sources",
-    aboutBody: "Sanatan Scroll is a verse-by-verse scroll through India's sacred texts, one shloka per screen, in canonical order, never an algorithmic feed. The Sanskrit texts are public domain. Gita English translation: Shri Purohit Swami (1935). Word meanings and commentary: Swami Sivananda. Mahabharata text: BORI Critical Edition. Ramayana and Hanuman Chalisa texts come from open datasets of the public-domain originals. Study aids marked AI are generated once per verse and stored; treat them as a reading companion, not a guru.",
+    aboutBody: "ScrollVerse is a verse-by-verse scroll through India's sacred texts, one shloka per screen, in canonical order, never an algorithmic feed. The Sanskrit texts are public domain. Gita English translation: Shri Purohit Swami (1935). Word meanings and commentary: Swami Sivananda. Mahabharata text: BORI Critical Edition. Ramayana and Hanuman Chalisa texts come from open datasets of the public-domain originals. Study aids marked AI are generated once per verse and stored; treat them as a reading companion, not a guru.",
     cancelPro: "Cancel Pro", proActive: "Pro is active", proUntil: "Renews / ends", planLabel: "Plan",
     trialNote: "7-day free trial, then", perMonth: "/month", perYear: "/year", perDay: "/day",
     mostPopular: "Most popular", bestValue: "Best value",
@@ -111,7 +120,7 @@ var STR = {
     voiceOnDevice: "on this device", voiceServerTitle: "Recorded server voices, deep male",
     voiceServerDetail: "Sanskrit · Google Chirp 3 HD Charon · Hindi · Google Neural2 male · English · Google Neural2 male (American)",
     audioNoteServer: "The Gita plays as real recordings, made with Google's Chirp and Neural2 deep male voices and streamed from the server, not your phone's built-in voice. Only the verse you play is downloaded. Best with headphones.",
-    audioNote: "The voice comes from your own device, Google on Android, Microsoft on Windows, Apple on iPhone/Mac. Sanatan Scroll picks the deepest male voice it finds there and pitches it lower still, for a resonant, pandit-style recitation. Sanskrit is chanted slowly with the Hindi voice, which reads Devanagari clearly. Best with headphones.",
+    audioNote: "The voice comes from your own device, Google on Android, Microsoft on Windows, Apple on iPhone/Mac. ScrollVerse picks the deepest male voice it finds there and pitches it lower still, for a resonant, pandit-style recitation. Sanskrit is chanted slowly with the Hindi voice, which reads Devanagari clearly. Best with headphones.",
     audioUnsupported: "Audio isn't available on this device or browser.",
     audioFreeNote: "Sanskrit chanting for a single verse is free. Hindi & English narration, chant + meaning and hands-free Play All are Pro.",
     audioLockedTitle: "Listening in Hindi & English is Pro",
@@ -149,11 +158,16 @@ var STR = {
     appearance: "रूप", darkMode: "डार्क मोड", lightMode: "लाइट मोड", account: "खाता",
     notSignedIn: "साइन इन नहीं है", previewReader: "पूर्वावलोकन पाठक", signInWithGoogle: "Google से साइन इन करें",
     signedInWithGoogle: "Google से साइन इन है", signOut: "साइन आउट",
-    googleNotConnected: "Google साइन इन अभी जुड़ा नहीं है। लॉन्च पर यह चालू होगा, और तब से आपकी स्ट्रीक, सहेजे हुए श्लोक और प्रो आपके Google खाते से जुड़े रहेंगे।",
     googleTiedNote: "आपकी स्ट्रीक, सहेजे हुए श्लोक, लाइक, योजना की प्रगति और प्रो इस Google खाते से जुड़े हैं, फ़ोन हो या डेस्कटॉप।",
     proTiedGoogle: "साइन इन करने के बाद प्रो आपके Google खाते से जुड़ेगा।",
+    proTiedSignedIn: "प्रो आपके Google खाते से जुड़ेगा",
+    signIn: "साइन इन",
+    tagline: "अपनी परम्परा को जानिए",
+    proViaGoogle: "आपके Google साइन इन से खुला है",
+    signInFailed: "Google साइन इन पूरा नहीं हुआ। कृपया फिर कोशिश करें।",
+    legal: "कानूनी जानकारी", privacyPolicy: "गोपनीयता नीति", termsConditions: "नियम और शर्तें", refundPolicy: "रिफ़ंड नीति",
     about: "परिचय और स्रोत",
-    aboutBody: "सनातन स्क्रॉल भारत के पवित्र ग्रन्थों की श्लोक-दर-श्लोक यात्रा है, एक स्क्रीन पर एक श्लोक, मूल क्रम में, कोई एल्गोरिद्म फ़ीड नहीं। संस्कृत मूल पाठ सार्वजनिक डोमेन में है। गीता का अंग्रेज़ी अनुवाद: श्री पुरोहित स्वामी (1935)। शब्दार्थ और टीका: स्वामी शिवानन्द। महाभारत पाठ: भण्डारकर समीक्षित संस्करण। रामायण और हनुमान चालीसा के पाठ सार्वजनिक डोमेन मूल के खुले डेटासेट से हैं। AI चिह्नित अध्ययन सामग्री हर श्लोक के लिए एक बार बनाकर सहेजी जाती है; इसे गुरु नहीं, पठन-साथी समझिए।",
+    aboutBody: "स्क्रॉलवर्स भारत के पवित्र ग्रन्थों की श्लोक-दर-श्लोक यात्रा है, एक स्क्रीन पर एक श्लोक, मूल क्रम में, कोई एल्गोरिद्म फ़ीड नहीं। संस्कृत मूल पाठ सार्वजनिक डोमेन में है। गीता का अंग्रेज़ी अनुवाद: श्री पुरोहित स्वामी (1935)। शब्दार्थ और टीका: स्वामी शिवानन्द। महाभारत पाठ: भण्डारकर समीक्षित संस्करण। रामायण और हनुमान चालीसा के पाठ सार्वजनिक डोमेन मूल के खुले डेटासेट से हैं। AI चिह्नित अध्ययन सामग्री हर श्लोक के लिए एक बार बनाकर सहेजी जाती है; इसे गुरु नहीं, पठन-साथी समझिए।",
     cancelPro: "प्रो रद्द करें", proActive: "प्रो सक्रिय है", proUntil: "नवीनीकरण / समाप्ति", planLabel: "योजना",
     trialNote: "7 दिन निःशुल्क, फिर", perMonth: "/माह", perYear: "/वर्ष", perDay: "/दिन",
     mostPopular: "सबसे लोकप्रिय", bestValue: "सबसे किफ़ायती",
@@ -182,7 +196,7 @@ var STR = {
     voiceOnDevice: "इस डिवाइस पर", voiceServerTitle: "रिकॉर्ड की हुई सर्वर आवाज़ें, गहरी पुरुष आवाज़",
     voiceServerDetail: "संस्कृत · Google Chirp 3 HD Charon · हिन्दी · Google Neural2 पुरुष · अंग्रेज़ी · Google Neural2 पुरुष (अमेरिकी)",
     audioNoteServer: "गीता असली रिकॉर्डिंग में सुनाई देती है, Google की Chirp और Neural2 गहरी पुरुष आवाज़ों से बनी, सर्वर से स्ट्रीम होती है, आपके फ़ोन की बिल्ट-इन आवाज़ नहीं। सिर्फ़ वही श्लोक डाउनलोड होता है जो आप चलाते हैं। हेडफ़ोन से सबसे अच्छा सुनाई देगा।",
-    audioNote: "आवाज़ आपके अपने डिवाइस से आती है, Android पर Google, Windows पर Microsoft, iPhone/Mac पर Apple। सनातन स्क्रॉल वहाँ मिलने वाली सबसे गहरी पुरुष आवाज़ चुनता है और उसे और गहरा करके पण्डित-शैली का गम्भीर पाठ बनाता है। संस्कृत का पाठ धीरे-धीरे हिन्दी आवाज़ में होता है, जो देवनागरी स्पष्ट पढ़ती है। हेडफ़ोन से सबसे अच्छा सुनाई देगा।",
+    audioNote: "आवाज़ आपके अपने डिवाइस से आती है, Android पर Google, Windows पर Microsoft, iPhone/Mac पर Apple। स्क्रॉलवर्स वहाँ मिलने वाली सबसे गहरी पुरुष आवाज़ चुनता है और उसे और गहरा करके पण्डित-शैली का गम्भीर पाठ बनाता है। संस्कृत का पाठ धीरे-धीरे हिन्दी आवाज़ में होता है, जो देवनागरी स्पष्ट पढ़ती है। हेडफ़ोन से सबसे अच्छा सुनाई देगा।",
     audioUnsupported: "इस डिवाइस या ब्राउज़र पर ध्वनि उपलब्ध नहीं है।",
     audioFreeNote: "एक श्लोक का संस्कृत पाठ निःशुल्क है। हिन्दी व अंग्रेज़ी वाचन, पाठ + अर्थ और पूरे अध्याय का Play All प्रो में है।",
     audioLockedTitle: "हिन्दी व अंग्रेज़ी में सुनना प्रो में है",
@@ -301,6 +315,146 @@ function streakInfo() {
     current: current, totalDays: totalDays, totalVerses: totalVerses,
     versesToday: state.readDays[todayKey] ? state.readDays[todayKey].length : 0
   };
+}
+
+/* ---------- Google sign-in (the space's lib/google.ts + lib/config.ts) ----------
+   Real Google sign-in via Google Identity Services (GIS), OAuth 2.0
+   token flow. Tapping Sign in opens Google's own account chooser: the
+   reader picks one of their Google accounts, Google returns an access
+   token, and the app reads the profile (name, email, picture) from
+   Google's userinfo endpoint. There is no Client Secret anywhere in
+   this flow, and the reader is never asked for a Client ID: the OAuth
+   Client ID is pre-configured for the app, the same value as
+   GOOGLE_CLIENT_ID in the space's client/src/lib/config.ts. A host may
+   override it by assigning window.SANATAN_GOOGLE_CLIENT_ID before the
+   app loads. The Client ID's authorised JavaScript origins in Google
+   Cloud Console must include this site's origin.
+   The Google session is stored on this device. While a session
+   exists, Pro is unlocked (a paid plan is never touched by signing in
+   or out) and each text resumes on the verse after the last one read. */
+var GOOGLE_CLIENT_ID = "342264556763-u76gmthiil99ahh3f20rvbivokjb9qp6.apps.googleusercontent.com";
+var GOOGLE_USER_KEY = "sanatan-scroll-google-user";
+function googleClientId() {
+  if (typeof window.SANATAN_GOOGLE_CLIENT_ID === "string" && window.SANATAN_GOOGLE_CLIENT_ID.trim()) {
+    return window.SANATAN_GOOGLE_CLIENT_ID.trim();
+  }
+  return GOOGLE_CLIENT_ID.trim();
+}
+function loadGoogleUser() {
+  try {
+    var raw = localStorage.getItem(GOOGLE_USER_KEY);
+    if (!raw) return null;
+    var p = JSON.parse(raw);
+    if (typeof p.name === "string" && p.name && typeof p.email === "string" && p.email) {
+      return { name: p.name, email: p.email, picture: typeof p.picture === "string" ? p.picture : undefined };
+    }
+  } catch (e) { /* corrupt or unavailable storage: signed out */ }
+  return null;
+}
+var googleUser = loadGoogleUser();
+function setGoogleUser(user) {
+  googleUser = user;
+  try {
+    if (user) localStorage.setItem(GOOGLE_USER_KEY, JSON.stringify(user));
+    else localStorage.removeItem(GOOGLE_USER_KEY);
+  } catch (e) { /* storage unavailable: the session lasts in memory only */ }
+  if (user) linkGooglePro(); else unlinkGooglePro();
+}
+function linkGooglePro() {
+  // Signing in unlocks Pro. A paid plan (daily, monthly, yearly,
+  // trial) is never overwritten by linking.
+  if (isPro()) return;
+  state.pro = { plan: "google", expiresAt: null };
+  saveState();
+}
+function unlinkGooglePro() {
+  // Signing out ends the Google unlock only; a paid plan stays.
+  if (state.pro && state.pro.plan === "google") {
+    state.pro = null;
+    saveState();
+  }
+}
+var gisScriptPromise = null;
+function loadGisScript() {
+  if (window.google && window.google.accounts && window.google.accounts.oauth2) return Promise.resolve();
+  if (gisScriptPromise) return gisScriptPromise;
+  gisScriptPromise = new Promise(function (resolve, reject) {
+    var script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = function () { resolve(); };
+    script.onerror = function () {
+      gisScriptPromise = null;
+      reject(new Error("Google sign-in script failed to load"));
+    };
+    document.head.appendChild(script);
+  });
+  return gisScriptPromise;
+}
+function signInWithGoogle() {
+  var clientId = googleClientId();
+  if (!clientId) return Promise.reject(new Error("Google sign-in is not available yet."));
+  return loadGisScript().then(function () {
+    var oauth2 = window.google && window.google.accounts && window.google.accounts.oauth2;
+    if (!oauth2) throw new Error("Google sign-in did not complete.");
+    return new Promise(function (resolve, reject) {
+      var client = oauth2.initTokenClient({
+        client_id: clientId,
+        scope: "openid email profile",
+        callback: function (resp) {
+          if (resp.access_token) resolve(resp.access_token);
+          else reject(new Error(resp.error || "Google sign-in was cancelled."));
+        },
+        error_callback: function (err) {
+          reject(new Error((err && (err.message || err.type)) || "Google sign-in was blocked."));
+        }
+      });
+      client.requestAccessToken({ prompt: "select_account" });
+    });
+  }).then(function (accessToken) {
+    return fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+      headers: { Authorization: "Bearer " + accessToken }
+    });
+  }).then(function (infoResp) {
+    if (!infoResp.ok) throw new Error("Google sign-in did not complete.");
+    return infoResp.json();
+  }).then(function (info) {
+    var name = typeof info.name === "string" ? info.name : "";
+    var email = typeof info.email === "string" ? info.email : "";
+    if (!name || !email) throw new Error("Google sign-in did not complete.");
+    var user = { name: name, email: email, picture: typeof info.picture === "string" ? info.picture : undefined };
+    setGoogleUser(user);
+    return user;
+  });
+}
+function signOutGoogle() {
+  setGoogleUser(null);
+  try { if (window.google) window.google.accounts.id.disableAutoSelect(); } catch (e) { /* GIS not loaded */ }
+  renderAllChrome();
+  if (screen === "profile") renderProfile();
+}
+function startGoogleSignIn() {
+  signInWithGoogle().then(function () {
+    renderAllChrome();
+    if (screen === "profile") renderProfile();
+    closePaywall();
+  }).catch(function () {
+    showNotice(t().signInFailed);
+  });
+}
+function googleButtonHtml() {
+  var tt = t();
+  return '<button type="button" class="googlebtn" data-google-signin="1">' + GOOGLE_MARK + esc(tt.signInWithGoogle) + "</button>";
+}
+function wireGoogleButtons(root) {
+  root.querySelectorAll("[data-google-signin]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      b.disabled = true;
+      startGoogleSignIn();
+      setTimeout(function () { b.disabled = false; }, 1200);
+    });
+  });
 }
 
 /* ---------- Corpus ---------- */
@@ -494,6 +648,31 @@ function renderHeader() {
     b.addEventListener("click", function () { selectText(b.getAttribute("data-text")); });
   });
   renderStreak();
+  el("taglineEl").textContent = tt.tagline;
+  var auth = el("authSlot");
+  if (googleUser) {
+    auth.innerHTML = '<button type="button" class="userchip" id="authChip" aria-label="' + esc(tt.account) + ": " + esc(googleUser.name) + '">' +
+      (googleUser.picture
+        ? '<img src="' + esc(googleUser.picture) + '" alt="" referrerpolicy="no-referrer">'
+        : '<span class="initial">' + esc(googleUser.name.charAt(0).toUpperCase()) + "</span>") +
+      '<span class="uname">' + esc(googleUser.name.split(" ")[0]) + "</span></button>";
+    el("authChip").addEventListener("click", function () { setScreen("profile"); });
+  } else {
+    auth.innerHTML = '<button type="button" class="signinbtn" id="authSignIn">' + GOOGLE_MARK + esc(tt.signIn) + "</button>";
+    el("authSignIn").addEventListener("click", function () {
+      var b = el("authSignIn");
+      b.disabled = true;
+      signInWithGoogle().then(function () {
+        renderAllChrome();
+        if (screen === "profile") renderProfile();
+      }).catch(function () {
+        showNotice(tt.signInFailed);
+      }).then(function () {
+        var b2 = el("authSignIn");
+        if (b2) b2.disabled = false;
+      });
+    });
+  }
   el("langToggle").querySelectorAll("[data-lang]").forEach(function (b) {
     var on = b.getAttribute("data-lang") === state.lang;
     b.classList.toggle("active", on);
@@ -571,7 +750,7 @@ function renderRightRail() {
   html += '<section class="railcard"><p class="streakbig">' + I.flame + s.current + " <span>" + esc(tt.dayStreak) + '</span></p>' +
     '<p class="dimline">' + esc(statsLine) + "</p></section>";
   if (!isPro()) {
-    html += '<section class="railcard pro"><p class="protitle">' + I.sparkle + ' Sanatan Pro</p>' +
+    html += '<section class="railcard pro"><p class="protitle">' + I.sparkle + ' ScrollVerse Pro</p>' +
       '<p class="dimline">' + esc(tt.proFeatures[0]) + '</p>' +
       '<button type="button" class="probtn2" id="railPro">' + esc(tt.goPro) + " · " + formatPrice(PLAN_PRICES.monthly[currency]) + esc(tt.perMonth) + "</button></section>";
   }
@@ -605,8 +784,14 @@ function selectText(k) {
 }
 function setScreenSilent(s) { screen = s; }
 function positionFor(k) {
+  // The saved position is the index of the last verse the reader saw;
+  // resuming means opening on the NEXT verse (saved + 1), clamped to
+  // the end of the text. No saved position means the reader has not
+  // started this text, so it opens at the first verse.
   var pos = state.positions[k];
-  return pos ? pos.verseIndex || 0 : 0;
+  if (!pos) return 0;
+  var last = TEXTS[k].verses.length - 1;
+  return Math.min((pos.verseIndex || 0) + 1, Math.max(0, last));
 }
 function jumpToVerse(v) {
   textKey = v.textKey;
@@ -843,7 +1028,7 @@ function drawShareCard(verse, translation) {
       ctx.fillText(verse.ref, W / 2, H - 150);
       ctx.fillStyle = dark ? "#a89880" : "#7a6f5f";
       ctx.font = "26px Georgia, serif";
-      ctx.fillText("Sanatan Scroll", W / 2, H - 100);
+      ctx.fillText("ScrollVerse", W / 2, H - 100);
       if (canvas.toBlob) {
         canvas.toBlob(function (blob) {
           if (!blob) { resolve("failed"); return; }
@@ -1064,19 +1249,30 @@ function renderSaved() {
 }
 
 /* ---------- Profile (screens.tsx) ---------- */
-function googleButtonHtml() {
-  var tt = t();
-  return '<button type="button" class="googlebtn" disabled aria-disabled="true">' + GOOGLE_MARK + esc(tt.signInWithGoogle) + "</button>" +
-    '<p class="note">' + esc(tt.googleNotConnected) + "</p>";
-}
 function renderProfile() {
   var tt = t();
   var panel = el("panelView");
   var s = streakInfo();
   var pro = isPro();
+  var googlePlan = pro && state.pro && state.pro.plan === "google";
   var proLine = pro
-    ? tt.proActive + (state.pro.expiresAt ? " · " + tt.proUntil + " " + new Date(state.pro.expiresAt).toLocaleDateString() : "")
+    ? googlePlan
+      ? tt.proActive + " · " + tt.proViaGoogle
+      : tt.proActive + (state.pro.expiresAt ? " · " + tt.proUntil + " " + new Date(state.pro.expiresAt).toLocaleDateString() : "")
     : tt.notProYet;
+  var accountHtml = googleUser
+    ? '<div class="row">' +
+      (googleUser.picture
+        ? '<img class="avatarimg" src="' + esc(googleUser.picture) + '" alt="" referrerpolicy="no-referrer">'
+        : '<span class="avatar accent">' + esc(googleUser.name.charAt(0).toUpperCase()) + "</span>") +
+      '<div class="who"><p class="n">' + esc(googleUser.name) + '</p><p class="s">' + esc(googleUser.email) + "</p></div>" +
+      '<span class="statuspill on"><span class="dot"></span>' + esc(tt.signedInWithGoogle) + "</span></div>" +
+      '<p class="note">' + esc(tt.googleTiedNote) + "</p>" +
+      '<div class="signout"><button type="button" class="pillbtn2" id="signOutBtn">' + esc(tt.signOut) + "</button></div>"
+    : '<div class="row">' +
+      '<span class="avatar">' + I.user + '</span><div class="who"><p class="n">' + esc(tt.notSignedIn) + '</p><p class="s">' + esc(tt.previewReader) + "</p></div>" +
+      '<span class="statuspill"><span class="dot"></span>' + esc(tt.notSignedIn) + "</span></div>" +
+      '<div style="margin-top:16px">' + googleButtonHtml() + "</div>";
   var stats = [
     { label: tt.dayStreak, value: s.current, flame: true },
     { label: tt.versesRead, value: s.totalVerses },
@@ -1088,16 +1284,15 @@ function renderProfile() {
       return '<div class="statcard"><p class="v">' + (st.flame ? I.flame : "") + st.value + '</p><p class="l">' + esc(st.label) + "</p></div>";
     }).join("") + "</div>" +
 
-    '<section class="profilecard" aria-label="' + esc(tt.account) + '"><div class="row">' +
-    '<span class="avatar">' + I.user + '</span><div class="who"><p class="n">' + esc(tt.notSignedIn) + '</p><p class="s">' + esc(tt.previewReader) + "</p></div>" +
-    '<span class="statuspill"><span class="dot"></span>' + esc(tt.notSignedIn) + "</span></div>" +
-    '<div style="margin-top:16px">' + googleButtonHtml() + "</div></section>" +
+    '<section class="profilecard" aria-label="' + esc(tt.account) + '">' + accountHtml + "</section>" +
 
     '<section class="profilecard" aria-label="' + esc(tt.managePro) + '"><div class="row">' +
-    '<span class="avatar gold">' + I.sparkle + '</span><div class="who"><p class="n">Sanatan Pro</p><p class="s">' + esc(proLine) + "</p></div>" +
-    (pro
-      ? '<button type="button" class="pillbtn2" id="cancelPro">' + esc(tt.cancelPro) + "</button>"
-      : '<button type="button" class="pillbtn2 accent" id="goProBtn">' + esc(tt.goPro) + "</button>") +
+    '<span class="avatar gold">' + I.sparkle + '</span><div class="who"><p class="n">ScrollVerse Pro</p><p class="s">' + esc(proLine) + "</p></div>" +
+    (googlePlan
+      ? ""
+      : pro
+        ? '<button type="button" class="pillbtn2" id="cancelPro">' + esc(tt.cancelPro) + "</button>"
+        : '<button type="button" class="pillbtn2 accent" id="goProBtn">' + esc(tt.goPro) + "</button>") +
     "</div></section>" +
 
     '<section class="profilecard"><div class="fontrow"><p class="lab">' + esc(tt.textSize) + '</p>' +
@@ -1109,8 +1304,16 @@ function renderProfile() {
     }).join("") + "</div></div></section>" +
 
     '<section class="profilecard" aria-label="' + esc(tt.about) + '"><p class="n" style="font-weight:600">' + esc(tt.about) + '</p>' +
-    '<p class="aboutbody">' + esc(tt.aboutBody) + "</p></section></div>";
+    '<p class="aboutbody">' + esc(tt.aboutBody) + "</p></section>" +
 
+    '<section class="profilecard legalcard" aria-label="' + esc(tt.legal) + '"><ul class="legallist">' +
+    [["/privacy-policy", tt.privacyPolicy], ["/terms", tt.termsConditions], ["/refund-policy", tt.refundPolicy]].map(function (r) {
+      return '<li><a href="' + r[0] + '">' + esc(r[1]) + '<span class="chev" aria-hidden="true">›</span></a></li>';
+    }).join("") + "</ul></section></div>";
+
+  wireGoogleButtons(panel);
+  var so = el("signOutBtn");
+  if (so) so.addEventListener("click", signOutGoogle);
   var gp = el("goProBtn");
   if (gp) gp.addEventListener("click", openPaywall);
   var cp = el("cancelPro");
@@ -1269,7 +1472,7 @@ function renderStudy() {
 
 /* ---------- Audio sheet (AudioSheet.tsx + lib/audio.ts) ---------- */
 var AUDIO_MODES = ["chant", "hindi", "english", "chant-hindi", "chant-english"];
-var SPEEDS = [0.8, 1, 1.2];
+var SPEEDS = [0.8, 1, 1.2, 1.5];
 var audio = null;
 function modeIsPro(m) { return m !== "chant"; }
 function audioFileFor(verse, lang) {
@@ -1281,7 +1484,7 @@ function hasServerAudio(verse) { return !!audioFileFor(verse, "sanskrit"); }
 function openAudio(verses, index) {
   stopAudioEngine();
   audio = {
-    verses: verses, idx: index, mode: "chant", speed: 1, continuous: false,
+    verses: verses, idx: index, mode: "chant", speed: 1.2, continuous: false,
     status: "idle", errorKind: null, queue: [], qstep: 0, el: null, usingTts: false,
     engine: new Audio()
   };
@@ -1557,14 +1760,14 @@ function renderPaywall() {
       '<button type="button" class="cta" data-pclose="1">' + esc(tt.readNow) + "</button></div>";
   } else if (paywallStep === "checkout") {
     inner = "<h2 style='font-size:18px;margin-top:0'>" + (currency === "INR" ? "UPI" : "Card") + "</h2>" +
-      '<div class="checkoutbox"><div class="row"><span class="name">Sanatan Pro · ' + paywallSel + '</span>' +
+      '<div class="checkoutbox"><div class="row"><span class="name">ScrollVerse Pro · ' + paywallSel + '</span>' +
       '<span class="amt">' + (canTrial ? formatPrice(0) : formatPrice(price)) + '<span class="per">' + esc(tt[planDef.per]) + "</span></span></div>" +
       (canTrial ? '<p class="trialnote">' + esc(tt.trialNote) + " " + formatPrice(price) + esc(tt.perYear) + "</p>" : "") + "</div>" +
       '<button type="button" class="cta" data-buy="1">' + (canTrial ? esc(tt.startTrial) : esc(tt.subscribe) + " · " + formatPrice(price)) + "</button>" +
       '<button type="button" class="backbtn" data-back="1">← ' + esc(tt.plans) + "</button>" +
       '<p class="fineprint">' + esc(tt.checkoutNote) + "</p>";
   } else {
-    inner = '<span class="badge">' + I.sparkle + "</span><h2>Sanatan Pro</h2>" +
+    inner = '<span class="badge">' + I.sparkle + "</span><h2>ScrollVerse Pro</h2>" +
       '<ul class="features">' + tt.proFeatures.map(function (f) {
         return "<li>" + I.check + "<span>" + esc(f) + "</span></li>";
       }).join("") + "</ul>" +
@@ -1577,8 +1780,12 @@ function renderPaywall() {
           (pl.badge ? '<span class="pbadge">' + esc(tt[pl.badge]) + "</span>" : "") + "</button>";
       }).join("") + "</div>" +
       '<button type="button" class="cta" data-checkout="1">' + (canTrial ? esc(tt.startTrial) : esc(tt.subscribe)) + "</button>" +
-      '<div class="googlewrap"><button type="button" class="googlebtn" disabled aria-disabled="true">' + GOOGLE_MARK + esc(tt.signInWithGoogle) + "</button>" +
-      '<p class="fineprint">' + esc(tt.proTiedGoogle) + " " + (state.lang === "hi" ? "Google साइन इन लॉन्च पर चालू होगा।" : "Google sign-in switches on at launch.") + "</p></div>" +
+      (googleUser
+        ? '<p class="signedinline">' + esc(state.lang === "hi"
+            ? googleUser.name + " के रूप में साइन इन है, " + tt.proTiedSignedIn
+            : "Signed in as " + googleUser.name + ", " + tt.proTiedSignedIn) + "</p>"
+        : '<div class="googlewrap">' + googleButtonHtml() +
+          '<p class="fineprint">' + esc(tt.proTiedGoogle) + "</p></div>") +
       '<p class="fineprint">' + esc(tt.checkoutNote) + "</p>";
   }
   slot.innerHTML = '<div class="modalback" role="dialog" aria-modal="true" aria-label="' + esc(tt.goPro) + '">' +
@@ -1607,6 +1814,7 @@ function renderPaywall() {
     renderPaywall();
     renderAllChrome();
   });
+  wireGoogleButtons(slot);
   void pro;
 }
 
@@ -1669,10 +1877,15 @@ function init() {
   fetch("data/corpus.json").then(function (r) { return r.json(); }).then(function (data) {
     corpus = data;
     buildTexts();
+    // Keep the Google Pro unlock in step with the stored session: a
+    // session signs Pro in, no session means no Google plan lingers.
+    if (googleUser) linkGooglePro(); else unlinkGooglePro();
     renderAllChrome();
     el("feedView").classList.remove("hidden");
     el("panelView").classList.add("hidden");
-    startFeed(TEXTS.gita.verses, positionFor("gita"));
+    // Signed-in readers resume where they left off, on the verse
+    // after the last one read; everyone else starts at verse 1.
+    startFeed(TEXTS.gita.verses, googleUser ? positionFor("gita") : 0);
     maybeOnboarding();
   }).catch(function () {
     el("feed").innerHTML = '<p class="loadmsg">Could not load your library. Please reopen the app.</p>';
