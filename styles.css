@@ -1,5 +1,18 @@
-/* Sanatan Scroll, Vercel preview. Plain CSS, no framework, no build step. */
-:root {
+/* Sanatan Scroll, Vercel preview. Plain CSS, no framework, no build step.
+   Dark mode is the default, with the brown background from the space. */
+:root, [data-theme="dark"] {
+  --bg: #241811;
+  --card: #33241a;
+  --ink: #f3e8d5;
+  --muted: #cbb493;
+  --saffron: #e8a33d;
+  --saffron-deep: #e8a33d;
+  --line: #5c4632;
+  --soft: #4a3826;
+  --green: #4caf7d;
+  --red: #e57373;
+}
+[data-theme="light"] {
   --bg: #fdf8ef;
   --card: #fffdf7;
   --ink: #2b2118;
@@ -13,11 +26,16 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+html, body { height: 100%; }
 body {
   font-family: Georgia, "Times New Roman", serif;
   background: var(--bg);
   color: var(--ink);
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 button { font-family: inherit; cursor: pointer; }
 input, select { font-family: inherit; }
@@ -55,9 +73,15 @@ input, select { font-family: inherit; }
 }
 .textchip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
 
-.layout { max-width: 1060px; margin: 0 auto; display: flex; gap: 24px; padding: 0 14px 110px; }
-.feedcol { flex: 1; min-width: 0; }
-.rail { display: none; width: 250px; flex: 0 0 250px; padding-top: 16px; }
+.layout { max-width: 1060px; width: 100%; margin: 0 auto; display: flex; gap: 24px; padding: 0 14px; flex: 1; min-height: 0; overflow: hidden; }
+.feedcol { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+#feedView { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.taphint { text-align: center; color: var(--muted); font-size: 12px; margin: 8px 0 0; letter-spacing: 0.4px; }
+.rail {
+  display: none; width: 250px; flex: 0 0 250px; padding-top: 16px;
+  min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: thin; padding-bottom: 90px;
+}
 @media (min-width: 900px) { .rail { display: block; } }
 .rail h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 18px 0 8px; }
 .rail button {
@@ -68,9 +92,9 @@ input, select { font-family: inherit; }
 .rail button:hover { color: var(--saffron-deep); }
 
 .feed {
-  height: calc(100vh - 190px); min-height: 420px;
-  overflow-y: auto; scroll-snap-type: y mandatory;
-  scrollbar-width: none; margin-top: 12px;
+  flex: 1; min-height: 0;
+  overflow-y: auto; overscroll-behavior: contain; scroll-snap-type: y mandatory;
+  scrollbar-width: none; margin-top: 12px; padding-bottom: 90px;
 }
 .feed::-webkit-scrollbar { display: none; }
 .verse {
@@ -84,7 +108,7 @@ input, select { font-family: inherit; }
   font-size: 22px; line-height: 1.9; white-space: pre-line; margin: 0 0 20px;
 }
 .verse .hi {
-  font-size: 17px; line-height: 1.8; color: #4a3a28; margin: 0 0 14px;
+  font-size: 17px; line-height: 1.8; color: var(--ink); margin: 0 0 14px;
 }
 .verse .en {
   font-size: 15px; line-height: 1.7; color: var(--muted); margin: 0 0 6px;
@@ -97,12 +121,16 @@ input, select { font-family: inherit; }
 .actions {
   display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 22px;
 }
-.actions button {
-  border: 1px solid var(--line); background: var(--bg); border-radius: 999px;
-  padding: 8px 13px; font-size: 13px;
+.actions button, .iconbtn {
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+  border-radius: 12px; padding: 8px 6px 6px; font-size: 11px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 56px;
 }
+.actions button svg, .iconbtn svg { width: 20px; height: 20px; }
 .actions button.on { background: var(--soft); border-color: var(--saffron); }
-.actions button.listen { background: var(--saffron); color: #fff; border-color: var(--saffron); font-weight: bold; }
+.actions button.listen { background: var(--saffron); color: #241811; border-color: var(--saffron); font-weight: bold; }
+.verse .taphint { margin-top: 14px; }
 .progressline { text-align: center; color: var(--muted); font-size: 13px; padding: 8px 0 20px; }
 
 .bottomnav {
@@ -110,12 +138,16 @@ input, select { font-family: inherit; }
   display: flex; background: var(--card); border-top: 1px solid var(--line);
 }
 .bottomnav button {
-  flex: 1; border: none; background: none; padding: 12px 2px 14px;
-  font-size: 13px; color: var(--muted);
+  flex: 1; border: none; background: none; padding: 8px 2px 10px;
+  font-size: 12px; color: var(--muted);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
 }
 .bottomnav button.active { color: var(--saffron-deep); font-weight: bold; }
+.bottomnav .navicon { display: block; line-height: 0; }
+.bottomnav .navicon svg { width: 22px; height: 22px; }
+.bottomnav .navlabel { display: block; }
 
-.panel { padding: 18px 4px; }
+.panel { padding: 18px 4px 100px; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .panel h2 { margin: 6px 0 4px; font-size: 22px; }
 .panel p { line-height: 1.7; font-size: 15px; }
 .panel .note {
@@ -123,7 +155,7 @@ input, select { font-family: inherit; }
   padding: 12px 14px; font-size: 14px; line-height: 1.6; margin: 12px 0;
 }
 .searchbox {
-  width: 100%; padding: 11px 14px; font-size: 15px;
+  width: 100%; padding: 11px 14px; font-size: 15px; color: var(--ink);
   border: 1px solid var(--line); border-radius: 12px; background: var(--card);
 }
 .result {
@@ -145,12 +177,13 @@ input, select { font-family: inherit; }
 .chip.active { background: var(--ink); color: #fff; }
 
 .modalback {
-  position: fixed; inset: 0; z-index: 40; background: rgba(43, 33, 24, 0.55);
-  display: flex; align-items: flex-end; justify-content: center;
+  position: fixed; inset: 0; z-index: 40; background: rgba(20, 12, 6, 0.65);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
 }
 .modal {
-  background: var(--card); width: 100%; max-width: 560px; max-height: 88vh;
-  overflow-y: auto; border-radius: 20px 20px 0 0; padding: 20px 20px 28px;
+  background: var(--card); color: var(--ink); width: 100%; max-width: 560px; max-height: 88vh;
+  overflow-y: auto; border-radius: 20px; padding: 20px 20px 28px;
+  border: 1px solid var(--line);
 }
 .modal h2 { margin: 4px 0 6px; }
 .modal p { line-height: 1.7; font-size: 15px; }
@@ -179,9 +212,16 @@ input, select { font-family: inherit; }
   border-radius: 12px; padding: 14px; font-size: 16px; font-weight: bold; margin-top: 10px;
 }
 .ghostbtn {
-  width: 100%; border: 1px solid var(--line); background: var(--bg);
+  width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
   border-radius: 12px; padding: 12px; font-size: 14px; margin-top: 8px;
 }
+.googlebtn {
+  width: 100%; border: 1px solid var(--line); background: #fff; color: #1f1f1f;
+  border-radius: 12px; padding: 12px; font-size: 15px; font-weight: bold; margin-top: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.googlebtn .glogo { font-size: 18px; font-weight: bold; color: #4285f4; }
+.themebtn { min-width: 76px; }
 .player { position: sticky; bottom: 64px; }
 .playerbox {
   background: var(--ink); color: #fdf8ef; border-radius: 16px;

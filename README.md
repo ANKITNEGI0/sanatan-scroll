@@ -22,14 +22,15 @@ No em dashes are used anywhere in this project, by Ankit's rule.
 
 - The full verse text for all four texts, Sanskrit first, then Hindi meaning, then English last, exactly as Ankit set the card order.
 - Verse of the Day, search across all four texts, chapter and section lists, the 21 day Gita plan, like and save, share, tap to understand, word by word for Gita.
-- The Pro paywall with Ankit's geo pricing: India Rs 29 for a day, Rs 99 for a month, Rs 599 for a year; outside India $2 a day, $9 a month, $59 a year. Location is detected from the device timezone, with a manual INR/USD toggle. The 7 day free trial is on the yearly plan only.
+- Dark mode is the default, with the brown background from the space, and a sun/moon toggle beside the EN/Hindi toggle. Chapters and side panels scroll inside themselves. Like, Save, Share, Study and Listen are icon buttons, with a tap for detailed view hint, and the bottom nav has icons. The Pro popup is a centred modal, not a bottom sheet.
+- The Pro paywall with Ankit's geo pricing: India Rs 29 for a day, Rs 99 for a month, Rs 599 for a year; outside India $2 a day, $9 a month, $59 a year. Location is detected automatically from the device, there is no INR/USD toggle at all. The 7 day free trial is on the yearly plan only.
 - The Listen player with a real audio element, speed control, previous and next, and Play All for a chapter. Sanskrit chant is free, Hindi and English narration and Play All are Pro, same boundary as the live app.
 - Streak and verses read, counted from the days you read in this browser.
 
 ## What is stubbed, honestly
 
 - **Pro checkout is simulated.** Tapping Buy or Start trial turns Pro on in this browser only. No payment is taken, no card is asked for, nothing is charged. There is no Razorpay link and no payment link anywhere in this project. Real checkout is a launch decision, see below.
-- **No sign in.** There is no Google login button and no fake one. In the Muse app you are signed in with your Muse account. On Vercel that identity does not exist, so this preview keeps likes, saves, streak and Pro in this browser only, in localStorage. If you open it on another phone, your streak starts again. For launch, sign in needs to be connected first.
+- **Signed out by default.** The app starts as a preview reader, with a Sign in with Google button on Profile and in the Pro popup. Google sign in is not connected yet, no OAuth Client ID has been supplied, so the button honestly says so and does not fake a login. When signed in, Profile shows a plain Sign Out button. Likes, saves, streak and Pro are kept in this browser only, in localStorage. If you open it on another phone, your streak starts again. For launch, sign in needs to be connected first.
 - **Audio is Chapter 1 only.** The full Gita audio is 2,097 MP3s, 154 MB. That does not fit a free Vercel deploy, see the audio section below. Verses outside Chapter 1 and Gita 2.47 show a clear note instead of a broken player.
 - **Study content is bundled text only.** Deep Study and Related Verses are Pro locked, as in the live app. In this preview, Pro unlock shows the word by word meanings. Full Deep Study generation needs the server, it is not faked here.
 - **Hindi and English meanings have gaps.** Gita has Hindi for all 701 verses. Ramayana has Sanskrit and English only. Mahabharata has Sanskrit and transliteration only, no English or Hindi meaning bundled. The cards say so plainly where a meaning is missing, instead of inventing one.

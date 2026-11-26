@@ -39,6 +39,22 @@ var UI = {
   en: { scroll: "Scroll", discover: "Discover", plans: "Plans", saved: "Saved", profile: "Profile" },
   hi: { scroll: "पढ़ें", discover: "खोजें", plans: "योजनाएँ", saved: "सहेजा हुआ", profile: "प्रोफ़ाइल" }
 };
+var ICONS = {
+  like: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+  save: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
+  study: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  listen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
+};
+function applyTheme() {
+  var theme = state.theme === "light" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", theme);
+  var btn = document.getElementById("themeBtn");
+  if (btn) btn.textContent = theme === "dark" ? "☀ Light" : "🌙 Dark";
+}
+function googleSignInNote() {
+  return "Google sign in is not connected yet. For launch it will be Google sign in, but no OAuth Client ID has been supplied yet, so this button does not sign you in. You are browsing as a preview reader for now.";
+}
 
 var state = loadState();
 var corpus = null;
@@ -54,10 +70,12 @@ function loadState() {
     if (raw) return JSON.parse(raw);
   } catch (e) { /* private mode, fall through to defaults */ }
   return {
-    lang: "en", pro: null, trialUsed: false, likes: [], saves: [],
+    lang: "en", theme: "dark", signedIn: false, pro: null, trialUsed: false, likes: [], saves: [],
     readLog: {}, planDone: {}, fontScale: 1
   };
 }
+if (!state.theme) state.theme = "dark";
+if (typeof state.signedIn === "undefined") state.signedIn = false;
 function saveState() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
 }
@@ -65,6 +83,8 @@ function detectCurrency() {
   try {
     var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (tz === "Asia/Kolkata" || tz === "Asia/Calcutta") return "INR";
+    if ((navigator.language || "").toLowerCase().indexOf("en-in") === 0) return "INR";
+    if ((navigator.language || "").toLowerCase().indexOf("hi") === 0) return "INR";
   } catch (e) { /* default below */ }
   return "USD";
 }
@@ -171,12 +191,12 @@ function verseCard(v, index) {
     '<p class="sa">' + esc(v.sa) + "</p>" +
     first + missing + words +
     '<div class="actions">' +
-      '<button type="button" data-act="like" class="' + (liked ? "on" : "") + '">' + (liked ? "Liked" : "Like") + "</button>" +
-      '<button type="button" data-act="save" class="' + (saved ? "on" : "") + '">' + (saved ? "Saved" : "Save") + "</button>" +
-      '<button type="button" data-act="share">Share</button>' +
-      '<button type="button" data-act="study">Study</button>' +
-      '<button type="button" data-act="listen" class="listen">Listen</button>' +
-    "</div></article>";
+      '<button type="button" data-act="like" class="iconbtn' + (liked ? " on" : "") + '">' + ICONS.like + '<span>' + (liked ? "Liked" : "Like") + "</span></button>" +
+      '<button type="button" data-act="save" class="iconbtn' + (saved ? " on" : "") + '">' + ICONS.save + '<span>' + (saved ? "Saved" : "Save") + "</span></button>" +
+      '<button type="button" data-act="share" class="iconbtn">' + ICONS.share + "<span>Share</span></button>" +
+      '<button type="button" data-act="study" class="iconbtn">' + ICONS.study + "<span>Study</span></button>" +
+      '<button type="button" data-act="listen" class="iconbtn listen">' + ICONS.listen + "<span>Listen</span></button>" +
+    '</div><p class="taphint">Tap the verse for the detailed view</p></article>';
 }
 
 function renderFeed() {
@@ -184,6 +204,11 @@ function renderFeed() {
   var feed = el("feed");
   feed.innerHTML = list.map(function (v, i) { return verseCard(v, i); }).join("");
   feed.querySelectorAll(".verse").forEach(function (card) {
+    card.addEventListener("click", function (e) {
+      if (e.target.closest("button")) return;
+      var idx = Number(card.getAttribute("data-index"));
+      openStudy(verseList(currentText)[idx]);
+    });
     card.querySelectorAll("[data-act]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var idx = Number(card.getAttribute("data-index"));
@@ -193,13 +218,15 @@ function renderFeed() {
           toggleInList("likes", verse.key);
           var on = state.likes.indexOf(verse.key) !== -1;
           btn.classList.toggle("on", on);
-          btn.textContent = on ? "Liked" : "Like";
+          var likeLabel = btn.querySelector("span");
+          if (likeLabel) likeLabel.textContent = on ? "Liked" : "Like";
         }
         if (act === "save") {
           toggleInList("saves", verse.key);
           var savedOn = state.saves.indexOf(verse.key) !== -1;
           btn.classList.toggle("on", savedOn);
-          btn.textContent = savedOn ? "Saved" : "Save";
+          var saveLabel = btn.querySelector("span");
+          if (saveLabel) saveLabel.textContent = savedOn ? "Saved" : "Save";
         }
         if (act === "share") shareVerse(verse);
         if (act === "study") openStudy(verse);
@@ -424,9 +451,12 @@ function openPaywall() {
     '<button type="button" class="closebtn" id="closeModal">x</button>' +
     "<h2>Sanatan Pro</h2>" +
     "<p>Deep Study and Related Verses, Hindi and English narration, and Play All for a whole chapter. Sanskrit chant stays free.</p>" +
-    '<div class="chiprow"><button type="button" class="chip' + (currency === "INR" ? " active" : "") + '" data-cur="INR">India, INR</button>' +
-    '<button type="button" class="chip' + (currency === "USD" ? " active" : "") + '" data-cur="USD">Outside India, USD</button></div>' +
+    '<p class="small">Price shown for your location, detected automatically. ' + (currency === "INR" ? "India, prices in INR." : "Outside India, prices in USD.") + " There is no currency switch, so the price cannot be changed by choosing another region.</p>" +
     '<div class="pricegrid">' + cards + "</div>" +
+    (state.signedIn
+      ? '<button type="button" class="ghostbtn" id="signOutBtn">Sign Out</button>'
+      : '<button type="button" class="googlebtn" id="googleSignInBtn"><span class="glogo">G</span> Sign in with Google</button>' +
+        '<p class="small" id="googleNote">' + googleSignInNote() + "</p>") +
     '<button type="button" class="bigbtn" id="buyBtn">' +
     (selectedPlan === "yearly" ? "Start 7 day free trial" : "Buy " + PRICES[selectedPlan].label + ", " + money(PRICES[selectedPlan][currency])) +
     "</button>" +
@@ -436,8 +466,15 @@ function openPaywall() {
   slot.querySelectorAll("[data-plan]").forEach(function (c) {
     c.addEventListener("click", function () { selectedPlan = c.getAttribute("data-plan"); openPaywall(); });
   });
-  slot.querySelectorAll("[data-cur]").forEach(function (c) {
-    c.addEventListener("click", function () { currency = c.getAttribute("data-cur"); openPaywall(); });
+  var gBtn = el("googleSignInBtn");
+  if (gBtn) gBtn.addEventListener("click", function () {
+    var note = el("googleNote");
+    if (note) note.textContent = googleSignInNote();
+    alert(googleSignInNote());
+  });
+  var soBtn = el("signOutBtn");
+  if (soBtn) soBtn.addEventListener("click", function () {
+    state.signedIn = false; saveState(); closeModal(); showView("profile");
   });
   el("buyBtn").addEventListener("click", function () {
     var days = selectedPlan === "daily" ? 1 : selectedPlan === "monthly" ? 30 : 365;
@@ -486,7 +523,8 @@ function showView(view) {
   document.querySelectorAll("#bottomNav button").forEach(function (b) {
     b.classList.toggle("active", b.getAttribute("data-view") === view);
     var label = UI[state.lang][b.getAttribute("data-view")] || b.getAttribute("data-view");
-    b.textContent = label;
+    var labelEl = b.querySelector(".navlabel");
+    if (labelEl) labelEl.textContent = label;
   });
   el("feedView").classList.toggle("hidden", view !== "feed");
   var panel = el("panelView");
@@ -610,10 +648,13 @@ function renderProfile(panel) {
     '<div class="stat"><div class="n">' + streakDays() + '</div><div class="l">day streak</div></div>' +
     '<div class="stat"><div class="n">' + versesReadTotal() + '</div><div class="l">verses read</div></div>' +
     '<div class="stat"><div class="n">' + state.saves.length + '</div><div class="l">saved</div></div></div>' +
+    (state.signedIn
+      ? '<button type="button" class="ghostbtn" id="signOutBtn">Sign Out</button>'
+      : '<button type="button" class="googlebtn" id="googleSignInBtn"><span class="glogo">G</span> Sign in with Google</button>' +
+        '<p class="small" id="googleNote">' + googleSignInNote() + "</p>") +
     '<div class="note"><b>Preview account.</b> You are browsing as a preview reader, nothing is signed in here. ' +
-    "In the Muse app you are signed in with your Muse account, and your Pro, streak and saves are tied to it. " +
-    "On Vercel, sign in is not connected yet. For launch it will be Google or email sign in, and your Pro, streak " +
-    "and saves will follow your account. There is no fake Sign in button here, and nothing to sign out of in this preview.</div>" +
+    "For launch it will be Google sign in, and your Pro, streak " +
+    "and saves will follow your account. Google sign in is not connected yet on this site.</div>" +
     '<p><b>Pro:</b> ' + (isPro() ? "On in this preview, plan " + state.pro.plan + ", " + state.pro.currency + "." : "Not on.") + "</p>" +
     '<p><b>Language:</b> ' + (state.lang === "hi" ? "Hindi" : "English") + '</p>' +
     '<p><b>Text size:</b></p><div class="chiprow">' +
@@ -622,6 +663,16 @@ function renderProfile(panel) {
     }).join("") + "</div>" +
     '<button type="button" class="ghostbtn" id="resetBtn">Clear preview data on this device</button>' +
     '<p class="small">Clearing removes your likes, saves, streak and preview Pro on this browser only. The live app keeps these on your account.</p>';
+  var gBtn = el("googleSignInBtn");
+  if (gBtn) gBtn.addEventListener("click", function () {
+    var note = el("googleNote");
+    if (note) note.textContent = googleSignInNote();
+    alert(googleSignInNote());
+  });
+  var soBtn = el("signOutBtn");
+  if (soBtn) soBtn.addEventListener("click", function () {
+    state.signedIn = false; saveState(); renderProfile(panel);
+  });
   panel.querySelectorAll("[data-font]").forEach(function (b) {
     b.addEventListener("click", function () {
       state.fontScale = Number(b.getAttribute("data-font"));
@@ -642,6 +693,12 @@ function renderProfile(panel) {
 
 /* ---------- init ---------- */
 function init() {
+  applyTheme();
+  el("themeBtn").addEventListener("click", function () {
+    state.theme = state.theme === "light" ? "dark" : "light";
+    saveState();
+    applyTheme();
+  });
   fetch("data/corpus.json")
     .then(function (r) { return r.json(); })
     .then(function (data) {
