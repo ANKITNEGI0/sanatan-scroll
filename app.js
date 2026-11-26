@@ -636,8 +636,13 @@ var FULL_LOADING = {}; // "ramayana:bala" -> Promise
 var currentFullFeed = null;  // { collection, section } when a full book is on screen
 var prevFeed = null;         // feed to return to after a spec (mood/plan) closes
 
+/* Full-text cache version: bump when the book JSONs are re-uploaded, so the
+   browser never gets a stale edge-cached copy served without CORS headers
+   (that is what broke book loading on 26 Nov 2026, the bucket had no CORS
+   config when the first copies were cached). */
+var FULL_TEXT_VERSION = "v2";
 function fullTextUrl(collection, section) {
-  return FULL_TEXT_BASE + collection + "/" + section + ".json";
+  return FULL_TEXT_BASE + collection + "/" + section + ".json?v=" + FULL_TEXT_VERSION;
 }
 function fullSectionName(collection, section) {
   var list = FULL_TEXT_META[collection] || [];
