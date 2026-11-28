@@ -1253,6 +1253,7 @@ function wireCards(feed) {
         if (act === "listen") openAudio(feedList, feedList.indexOf(verse));
       });
     });
+    fitCard(card);
   });
 }
 function refreshCardActions(card, verse) {
@@ -1311,6 +1312,57 @@ function handleVisible(verse) {
   lastRecordedKey[verse.textKey] = verse.key;
   recordRead(verse);
 }
+/* ---------- One-screen verse fit (the space's Feed.tsx fit) ----------
+   Verse text is sized so the whole card fits one screen. Two layers:
+   1. Each block steps its size down as its own character count grows
+      (the *Fit functions), so the first paint is already close.
+   2. fitCard then measures the rendered card: if the stacked text
+      still exceeds the card, a single fit factor shrinks every text
+      block together until it fits. The factor never goes below
+      FIT_FLOOR; a verse too long even at the floor keeps scrolling
+      inside the card as a last resort. */
+var FIT_FLOOR = 0.48;
+var FIT_STEP = 0.04;
+function primaryFit(chars) {
+  if (chars <= 110) return 1;
+  if (chars <= 170) return 0.89;
+  if (chars <= 240) return 0.8;
+  if (chars <= 340) return 0.72;
+  if (chars <= 500) return 0.66;
+  return 0.61;
+}
+function secondaryFit(chars) {
+  if (chars <= 170) return 1;
+  if (chars <= 300) return 0.92;
+  return 0.85;
+}
+function sanskritFit(chars) {
+  if (chars <= 130) return 1;
+  if (chars <= 200) return 0.93;
+  return 0.87;
+}
+function applyFit(card, fit) {
+  card.querySelectorAll("[data-base]").forEach(function (el) {
+    el.style.fontSize = (Number(el.getAttribute("data-base")) * fit).toFixed(3) + "rem";
+  });
+}
+function fitCard(card) {
+  if (!card) return;
+  var fit = 1;
+  applyFit(card, 1);
+  var guard = 0;
+  while (guard < 14 && fit > FIT_FLOOR &&
+    (card.scrollHeight > card.clientHeight + 2 || card.scrollWidth > card.clientWidth + 2)) {
+    fit = Math.max(FIT_FLOOR, Math.round((fit - FIT_STEP) * 100) / 100);
+    applyFit(card, fit);
+    guard++;
+  }
+}
+function fitVisibleCards() {
+  var feed = el("feed");
+  if (!feed) return;
+  feed.querySelectorAll(".verse").forEach(function (card) { fitCard(card); });
+}
 function verseCardHtml(verse) {
   var tt = t();
   var liked = state.likes.indexOf(verse.key) !== -1;
@@ -1339,7 +1391,13 @@ function verseCardHtml(verse) {
 function meaningBlock(which, verse, primary) {
   var tt = t();
   var cls = primary ? " primary-text" : "";
-  var big = primary ? ' style="font-size:' + (1.55 * state.fontScale).toFixed(3) + 'rem"' : "";
+  var text = which === "hi" ? verse.hi : verse.en;
+  var base = 0;
+  if (text) {
+    if (which === "hi") base = primary ? 1.55 * state.fontScale * primaryFit(text.length) : 1.08 * secondaryFit(text.length);
+    else base = primary ? 1.55 * state.fontScale * primaryFit(text.length) : 1.15 * secondaryFit(text.length);
+  }
+  var big = text ? ' style="font-size:' + base.toFixed(3) + 'rem" data-base="' + base.toFixed(3) + '"' : "";
   if (which === "hi") {
     if (!verse.hi) {
       if (verse.fullText) {
@@ -1363,7 +1421,8 @@ function meaningBlock(which, verse, primary) {
 function sanskritBlock(verse) {
   var tt = t();
   if (!verse.sa) return "";
-  return '<div class="sanskrit-last"><p class="meaning-label">' + esc(tt.sanskritLabel) + '</p><p class="sa sa-small">' + esc(verse.sa) + "</p></div>";
+  var base = 1.19 * state.fontScale * sanskritFit(verse.sa.length);
+  return '<div class="sanskrit-last"><p class="meaning-label">' + esc(tt.sanskritLabel) + '</p><p class="sa sa-small" style="font-size:' + base.toFixed(3) + 'rem" data-base="' + base.toFixed(3) + '">' + esc(verse.sa) + "</p></div>";
 }
 function renderSpecBar() {
   var bar = el("specBar");
@@ -2306,6 +2365,18 @@ function init() {
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") { closeSheets(); closePaywall(); }
   });
+  // A taller or narrower window changes whether a verse fits one
+  // screen, so re-fit the cards on screen after a resize settles.
+  // Webfonts arriving late change the same heights, so re-fit once
+  // they are ready too.
+  var fitTimer = null;
+  window.addEventListener("resize", function () {
+    if (fitTimer) clearTimeout(fitTimer);
+    fitTimer = setTimeout(fitVisibleCards, 150);
+  });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { fitVisibleCards(); });
+  }
   if ("speechSynthesis" in window) {
     try { window.speechSynthesis.getVoices(); } catch (e) { /* ignore */ }
   }
